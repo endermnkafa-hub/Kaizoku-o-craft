@@ -2,6 +2,9 @@ package net.mcreator.kaizokuocraft.player;
 
 import net.minecraft.server.level.ServerPlayer;
 
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
+
 public final class PlayerDataManager {
 
     private PlayerDataManager() {
