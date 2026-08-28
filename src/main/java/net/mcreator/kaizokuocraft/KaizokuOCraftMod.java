@@ -21,8 +21,8 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import net.mcreator.kaizokuocraft.player.PlayerDataEvents;
 import net.mcreator.kaizokuocraft.player.ModAttachments;
-import net.mcreator.kaizokuocraft.player.ExperienceCommand;
 import net.mcreator.kaizokuocraft.player.ExperienceEvents;
+import net.mcreator.kaizokuocraft.player.ExperienceCommand;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
@@ -43,6 +43,7 @@ public class KaizokuOCraftMod {
 		// Start of user code block mod constructor
 		ModAttachments.register(modEventBus);
 		NeoForge.EVENT_BUS.register(PlayerDataEvents.class);
+		NeoForge.EVENT_BUS.register(ExperienceEvents.class);
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
