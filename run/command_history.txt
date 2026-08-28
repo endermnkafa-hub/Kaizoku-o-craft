@@ -6,3 +6,9 @@
 /kaizoku_race giant
 /kaizoku_race human
 /kaizoku_race bok
+/kaizoku_race giant
+/kaizoku_race human
+/kaizoku_race fish
+/kaizoku_race fish_man
+/kaizoku_race mink
+/kaizoku_race fish_man
