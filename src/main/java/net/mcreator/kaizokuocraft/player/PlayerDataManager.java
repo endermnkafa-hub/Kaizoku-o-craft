@@ -14,6 +14,14 @@ public final class PlayerDataManager {
         return player.getData(ModAttachments.PLAYER_DATA);
     }
 
+    public static RaceType getRace(ServerPlayer player) {
+    	return get(player).getRace();
+	}
+
+	public static void setRace(ServerPlayer player, RaceType race) {
+    	get(player).setRace(race);
+	}
+
     public static long getLevel(ServerPlayer player) {
         return get(player).getLevel();
     }
