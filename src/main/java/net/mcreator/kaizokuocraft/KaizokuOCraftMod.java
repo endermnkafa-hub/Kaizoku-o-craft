@@ -23,6 +23,7 @@ import net.mcreator.kaizokuocraft.player.PlayerDataEvents;
 import net.mcreator.kaizokuocraft.player.ModAttachments;
 import net.mcreator.kaizokuocraft.player.ExperienceEvents;
 import net.mcreator.kaizokuocraft.player.ExperienceCommand;
+import net.mcreator.kaizokuocraft.player.PowerCommand;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
