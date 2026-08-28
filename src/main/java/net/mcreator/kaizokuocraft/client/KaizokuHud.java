@@ -46,7 +46,7 @@ public final class KaizokuHud {
                 );
 
         double multiplier =
-                PowerManager.getDamageMultiplier(level);
+        PowerManager.getLevelDamageMultiplier(level);
 
         int x = 8;
         int y = 8;
