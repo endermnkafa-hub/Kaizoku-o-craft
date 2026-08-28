@@ -1,2 +1,5 @@
 /kaizoku_xp 50
 /kaizoku_xp 10000
+/kaizoku_power
+/kaizoku_xp 10000
+/kaizoku_power
