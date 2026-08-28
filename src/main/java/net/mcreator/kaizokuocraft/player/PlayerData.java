@@ -1,5 +1,6 @@
 package net.mcreator.kaizokuocraft.player;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
@@ -31,7 +32,7 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
 
         tag.putInt("Level", level);
@@ -41,7 +42,7 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag tag) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
         level = Math.max(1, tag.getInt("Level"));
         experience = Math.max(0L, tag.getLong("Experience"));
     }
