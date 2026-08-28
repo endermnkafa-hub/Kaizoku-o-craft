@@ -31,4 +31,13 @@ public final class PlayerDataEvents {
                 )
         );
     }
+
+    @SubscribeEvent
+	public static void onPlayerClone(PlayerEvent.Clone event) {
+    	if (!(event.getEntity() instanceof ServerPlayer player)) {
+        	return;
+    	}
+
+    	RaceManager.applyRace(player);
+	}
 }
