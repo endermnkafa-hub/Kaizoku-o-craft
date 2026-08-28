@@ -13,6 +13,7 @@ import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.api.distmarker.Dist;
 
 import net.minecraft.server.TickTask;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -22,8 +23,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
-import net.neoforged.fml.Dist;
-import net.neoforged.fml.DistExecutor;
 import net.mcreator.kaizokuocraft.client.ClientInit;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -43,6 +42,7 @@ public class KaizokuOCraftMod {
 
 	public KaizokuOCraftMod(IEventBus modEventBus) {
 		// Start of user code block mod constructor
+		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientInit::init);
 		NeoForge.EVENT_BUS.register(KaizokuHud.class);
 		ModAttachments.register(modEventBus);
 		NeoForge.EVENT_BUS.register(PlayerDataEvents.class);
