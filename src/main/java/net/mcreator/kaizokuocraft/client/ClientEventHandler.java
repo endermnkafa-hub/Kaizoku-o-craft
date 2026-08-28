@@ -12,6 +12,14 @@ import net.minecraft.client.Minecraft;
         bus = EventBusSubscriber.Bus.MOD,
         value = net.neoforged.api.distmarker.Dist.CLIENT
 )
+
+@SubscribeEvent
+public static void onClientTick(ClientTickEvent.Post event) {
+    while (CombatKeyMappings.TOGGLE_COMBAT.consumeClick()) {
+        CombatState.toggle();
+    }
+}
+
 public final class ClientEventHandler {
 
     private ClientEventHandler() {

@@ -10,6 +10,12 @@ import net.neoforged.fml.common.Mod;
 
 import org.lwjgl.glfw.GLFW;
 
+@EventBusSubscriber(
+        modid = "kaizoku_o_craft",
+        bus = Mod.EventBusSubscriber.Bus.MOD,
+        value = net.neoforged.api.distmarker.Dist.CLIENT
+)
+
 public final class CombatKeyMappings {
 
     public static final KeyMapping TOGGLE_COMBAT =
