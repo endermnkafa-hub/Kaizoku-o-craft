@@ -53,3 +53,63 @@
 [28Aug2026 23:33:08.465] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
 [28Aug2026 23:33:08.480] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
 [28Aug2026 23:33:08.511] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
+[28Aug2026 23:33:13.817] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1290 recipes
+[28Aug2026 23:33:13.932] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1399 advancements
+[28Aug2026 23:33:14.256] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.1
+[28Aug2026 23:33:14.256] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[28Aug2026 23:33:14.985] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[28Aug2026 23:33:15.299] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[28Aug2026 23:33:15.375] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 375 ms
+[28Aug2026 23:33:15.376] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[28Aug2026 23:33:15.423] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 5, from 10
+[28Aug2026 23:33:15.423] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 12, from 0
+[28Aug2026 23:33:15.981] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:de84bd42] logged in with entity id 47 at (8.5, 104.0, -34.5)
+[28Aug2026 23:33:16.023] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
+[28Aug2026 23:33:16.141] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | Level: 1 | XP: 0/125
+[28Aug2026 23:33:16.145] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 2 advancements
+[28Aug2026 23:33:19.667] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Kaizoku-ō Craft | XP eklendi: 50 | Level: 1 | XP: 50]
+[28Aug2026 23:33:19.668] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | XP eklendi: 50 | Level: 1 | XP: 50
+[28Aug2026 23:33:31.534] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Kaizoku-ō Craft | XP eklendi: 10000 | Level: 25 | XP: 150]
+[28Aug2026 23:33:31.534] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 2
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 3
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 4
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 5
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 6
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 7
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 8
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 9
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 10
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 11
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 12
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 13
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 14
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 15
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 16
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 17
+[28Aug2026 23:33:31.535] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 18
+[28Aug2026 23:33:31.536] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 19
+[28Aug2026 23:33:31.536] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 20
+[28Aug2026 23:33:31.536] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 21
+[28Aug2026 23:33:31.536] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 22
+[28Aug2026 23:33:31.536] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 23
+[28Aug2026 23:33:31.536] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 24
+[28Aug2026 23:33:31.537] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | LEVEL UP! → Level 25
+[28Aug2026 23:33:31.537] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | XP eklendi: 10000 | Level: 25 | XP: 150
+[28Aug2026 23:33:35.328] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[28Aug2026 23:33:35.341] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[28Aug2026 23:33:35.346] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[28Aug2026 23:33:35.346] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[28Aug2026 23:34:22.535] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
+[28Aug2026 23:34:22.602] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
+[28Aug2026 23:34:22.602] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
+[28Aug2026 23:34:22.612] [Server thread/INFO] [net.minecraft.server.network.ServerCommonPacketListenerImpl/]: Stopping singleplayer server as player logged out
+[28Aug2026 23:34:22.629] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[28Aug2026 23:34:22.630] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[28Aug2026 23:34:22.630] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[28Aug2026 23:34:22.919] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[28Aug2026 23:34:23.275] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[28Aug2026 23:34:23.280] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[28Aug2026 23:34:23.288] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (New World): All chunks are saved
+[28Aug2026 23:34:23.288] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[28Aug2026 23:34:23.288] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[28Aug2026 23:34:23.288] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
