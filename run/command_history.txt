@@ -12,3 +12,6 @@
 /kaizoku_race fish_man
 /kaizoku_race mink
 /kaizoku_race fish_man
+/kaizoku_race mink
+/kaizoku_xp 9999999999
+/kaizoku_xp 999999999999999999
