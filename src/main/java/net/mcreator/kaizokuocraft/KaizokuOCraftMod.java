@@ -22,7 +22,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
-import net.mcreator.kaizokuocraft.player.LevelCommand;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
@@ -57,10 +56,10 @@ public class KaizokuOCraftMod {
 	// Start of user code block mod methods
 	@SubscribeEvent
 	public void registerCommands(RegisterCommandsEvent event) {
-	    ExperienceCommand.register(event.getDispatcher());
-	    PowerCommand.register(event.getDispatcher());
-	    RaceCommand.register(event.getDispatcher());
-	    LevelCommand.register(event.getDispatcher());
+		ExperienceCommand.register(event.getDispatcher());
+		PowerCommand.register(event.getDispatcher());
+		RaceCommand.register(event.getDispatcher());
+		LevelCommand.register(event.getDispatcher());
 	}
 
 	// End of user code block mod methods
