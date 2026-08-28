@@ -3,3 +3,6 @@
 /kaizoku_power
 /kaizoku_xp 10000
 /kaizoku_power
+/kaizoku_race giant
+/kaizoku_race human
+/kaizoku_race bok

@@ -53,3 +53,43 @@
 [28Aug2026 23:57:46.396] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
 [28Aug2026 23:57:46.410] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
 [28Aug2026 23:57:46.440] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
+[28Aug2026 23:58:06.651] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1290 recipes
+[28Aug2026 23:58:06.752] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1399 advancements
+[28Aug2026 23:58:07.105] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.1
+[28Aug2026 23:58:07.105] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[28Aug2026 23:58:07.831] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[28Aug2026 23:58:07.992] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[28Aug2026 23:58:08.076] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[28Aug2026 23:58:08.088] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 242 ms
+[28Aug2026 23:58:08.126] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 5, from 10
+[28Aug2026 23:58:08.126] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 12, from 0
+[28Aug2026 23:58:08.557] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:78316ff8] logged in with entity id 107 at (24.679584720674992, 64.0, 17.90161052579373)
+[28Aug2026 23:58:08.600] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
+[28Aug2026 23:58:08.673] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 41 advancements
+[28Aug2026 23:58:28.594] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Kaizoku-ō Craft | Race: Giant]
+[28Aug2026 23:58:28.596] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | Race: Giant
+[28Aug2026 23:58:37.116] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Kaizoku-ō Craft | Race: Human]
+[28Aug2026 23:58:37.116] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Kaizoku-ō Craft | Race: Human
+[28Aug2026 23:58:40.979] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[28Aug2026 23:58:40.993] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[28Aug2026 23:58:41.001] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[28Aug2026 23:58:41.001] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[28Aug2026 23:59:05.118] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Geçersiz race. Kullanılabilir: human, fish_man, mink, giant
+[28Aug2026 23:59:08.729] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[28Aug2026 23:59:08.738] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[28Aug2026 23:59:08.741] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[28Aug2026 23:59:08.741] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[28Aug2026 23:59:17.076] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
+[28Aug2026 23:59:17.135] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
+[28Aug2026 23:59:17.137] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
+[28Aug2026 23:59:17.144] [Server thread/INFO] [net.minecraft.server.network.ServerCommonPacketListenerImpl/]: Stopping singleplayer server as player logged out
+[28Aug2026 23:59:17.178] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[28Aug2026 23:59:17.179] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[28Aug2026 23:59:17.179] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[28Aug2026 23:59:17.363] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[28Aug2026 23:59:17.585] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[28Aug2026 23:59:17.588] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[28Aug2026 23:59:17.598] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (New World): All chunks are saved
+[28Aug2026 23:59:17.598] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[28Aug2026 23:59:17.598] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[28Aug2026 23:59:17.598] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
