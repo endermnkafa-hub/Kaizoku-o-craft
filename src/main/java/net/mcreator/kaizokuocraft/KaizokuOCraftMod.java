@@ -46,6 +46,12 @@ public class KaizokuOCraftMod {
 		ModAttachments.register(modEventBus);
 		NeoForge.EVENT_BUS.register(PlayerDataEvents.class);
 		NeoForge.EVENT_BUS.register(ExperienceEvents.class);
+
+		addNetworkMessage(
+        		SyncPlayerDataPacket.TYPE,
+        		SyncPlayerDataPacket.STREAM_CODEC,
+        		SyncPlayerDataPacket::handle
+);
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
