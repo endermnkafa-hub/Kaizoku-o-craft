@@ -17,6 +17,7 @@ public final class PlayerDataEvents {
         }
 
         PlayerData data = PlayerDataManager.get(player);
+        long requiredXp = PlayerDataManager.getRequiredExperience(data.getLevel());
 
         player.sendSystemMessage(
                 Component.literal(
@@ -24,6 +25,8 @@ public final class PlayerDataEvents {
                                 + data.getLevel()
                                 + " §7| §fXP: §e"
                                 + data.getExperience()
+                                + "§7/§e"
+                                + requiredXp
                 )
         );
     }
