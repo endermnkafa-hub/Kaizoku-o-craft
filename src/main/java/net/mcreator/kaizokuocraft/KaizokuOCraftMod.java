@@ -22,6 +22,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
+import net.neoforged.fml.Dist;
+import net.neoforged.fml.DistExecutor;
+import net.mcreator.kaizokuocraft.client.ClientInit;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
