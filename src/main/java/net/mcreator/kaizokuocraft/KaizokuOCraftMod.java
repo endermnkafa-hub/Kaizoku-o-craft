@@ -19,14 +19,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.FriendlyByteBuf;
 
-import net.mcreator.kaizokuocraft.player.PowerCommand;
-import net.mcreator.kaizokuocraft.player.PlayerDataEvents;
-import net.mcreator.kaizokuocraft.player.ModAttachments;
-import net.mcreator.kaizokuocraft.player.ExperienceEvents;
-import net.mcreator.kaizokuocraft.player.ExperienceCommand;
+import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
-import net.mcreator.kaizokuocraft.player.RaceCommand;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
@@ -62,6 +57,7 @@ public class KaizokuOCraftMod {
 	public void registerCommands(RegisterCommandsEvent event) {
 		ExperienceCommand.register(event.getDispatcher());
 		PowerCommand.register(event.getDispatcher());
+		RaceCommand.register(event.getDispatcher());
 	}
 
 	// End of user code block mod methods
