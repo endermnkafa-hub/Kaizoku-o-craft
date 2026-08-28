@@ -2,14 +2,19 @@ package net.mcreator.kaizokuocraft.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public final class CombatHud {
 
-    private static final int SLOT_SIZE = 56;
-    private static final int SLOT_GAP = 6;
+    private static final int SLOT_WIDTH = 64;
+    private static final int SLOT_HEIGHT = 72;
+    private static final int SLOT_GAP = 5;
+
+    private static final int ICON_SIZE = 32;
 
     private CombatHud() {
     }
@@ -29,43 +34,61 @@ public final class CombatHud {
 
         GuiGraphics graphics = event.getGuiGraphics();
 
-        int screenWidth = minecraft.getWindow().getGuiScaledWidth();
-        int screenHeight = minecraft.getWindow().getGuiScaledHeight();
+        int screenWidth =
+                minecraft.getWindow().getGuiScaledWidth();
+
+        int screenHeight =
+                minecraft.getWindow().getGuiScaledHeight();
 
         int totalWidth =
-                (SLOT_SIZE * 3) + (SLOT_GAP * 2);
+                (SLOT_WIDTH * 3) + (SLOT_GAP * 2);
 
         int startX =
                 (screenWidth - totalWidth) / 2;
 
         int y =
-                screenHeight - 82;
+                screenHeight - SLOT_HEIGHT - 12;
 
+        /*
+         * İlk slot:
+         * Punch
+         */
         drawSkill(
                 graphics,
                 minecraft,
                 startX,
                 y,
                 "Punch",
-                "Z"
+                "Z",
+                new ItemStack(Items.LEATHER)
         );
 
+        /*
+         * İkinci slot:
+         * Şimdilik boş
+         */
         drawSkill(
                 graphics,
                 minecraft,
-                startX + SLOT_SIZE + SLOT_GAP,
+                startX + SLOT_WIDTH + SLOT_GAP,
                 y,
                 "Empty",
-                "X"
+                "X",
+                ItemStack.EMPTY
         );
 
+        /*
+         * Üçüncü slot:
+         * Şimdilik boş
+         */
         drawSkill(
                 graphics,
                 minecraft,
-                startX + (SLOT_SIZE + SLOT_GAP) * 2,
+                startX + (SLOT_WIDTH + SLOT_GAP) * 2,
                 y,
                 "Empty",
-                "C"
+                "C",
+                ItemStack.EMPTY
         );
     }
 
@@ -75,76 +98,150 @@ public final class CombatHud {
             int x,
             int y,
             String name,
-            String key
+            String key,
+            ItemStack icon
     ) {
 
-        // Slot arka planı
+        /*
+         * Slot gölgesi
+         */
+        graphics.fill(
+                x + 2,
+                y + 2,
+                x + SLOT_WIDTH + 2,
+                y + SLOT_HEIGHT + 2,
+                0x90000000
+        );
+
+        /*
+         * Slot arka planı
+         */
         graphics.fill(
                 x,
                 y,
-                x + SLOT_SIZE,
-                y + SLOT_SIZE,
-                0xCC111111
+                x + SLOT_WIDTH,
+                y + SLOT_HEIGHT,
+                0xD0161616
         );
 
-        // Slot kenarı
-        drawBorder(
-                graphics,
+        /*
+         * Üst kenar
+         */
+        graphics.fill(
                 x,
                 y,
-                SLOT_SIZE,
-                SLOT_SIZE,
+                x + SLOT_WIDTH,
+                y + 2,
                 0xFFFFFFFF
         );
 
-        // Şimdilik skill ikonu yerine placeholder
+        /*
+         * Alt kenar
+         */
         graphics.fill(
-                x + 10,
-                y + 7,
-                x + SLOT_SIZE - 10,
-                y + 37,
-                0xFF333333
+                x,
+                y + SLOT_HEIGHT - 2,
+                x + SLOT_WIDTH,
+                y + SLOT_HEIGHT,
+                0xFF555555
         );
 
-        // Skill adı
+        /*
+         * Sol kenar
+         */
+        graphics.fill(
+                x,
+                y,
+                x + 2,
+                y + SLOT_HEIGHT,
+                0xFFFFFFFF
+        );
+
+        /*
+         * Sağ kenar
+         */
+        graphics.fill(
+                x + SLOT_WIDTH - 2,
+                y,
+                x + SLOT_WIDTH,
+                y + SLOT_HEIGHT,
+                0xFF555555
+        );
+
+        /*
+         * Skill icon alanı
+         */
+        int iconX =
+                x + (SLOT_WIDTH - ICON_SIZE) / 2;
+
+        int iconY =
+                y + 5;
+
+        graphics.fill(
+                iconX - 3,
+                iconY - 3,
+                iconX + ICON_SIZE + 3,
+                iconY + ICON_SIZE + 3,
+                0xFF242424
+        );
+
+        /*
+         * Gerçek item iconunu çiz.
+         */
+        if (!icon.isEmpty()) {
+            graphics.renderItem(
+                    icon,
+                    iconX,
+                    iconY
+            );
+        } else {
+
+            /*
+             * Boş skill için ? göster.
+             */
+            String emptyText = "?";
+
+            int emptyWidth =
+                    minecraft.font.width(emptyText);
+
+            graphics.drawString(
+                    minecraft.font,
+                    emptyText,
+                    iconX + (ICON_SIZE - emptyWidth) / 2,
+                    iconY + 9,
+                    0xFF777777,
+                    false
+            );
+        }
+
+        /*
+         * Skill adı
+         */
         int nameWidth =
                 minecraft.font.width(name);
 
         graphics.drawString(
                 minecraft.font,
                 name,
-                x + (SLOT_SIZE - nameWidth) / 2,
-                y + 40,
+                x + (SLOT_WIDTH - nameWidth) / 2,
+                y + 43,
                 0xFFFFFFFF,
                 true
         );
 
-        // Kullanma tuşu
+        /*
+         * Kullanım tuşu
+         */
         int keyWidth =
-                minecraft.font.width(key);
+                minecraft.font.width("[" + key + "]");
 
         graphics.drawString(
                 minecraft.font,
-                key,
-                x + (SLOT_SIZE - keyWidth) / 2,
-                y + 49,
+                "[" + key + "]",
+                x + (SLOT_WIDTH - keyWidth) / 2,
+                y + 57,
                 0xFFFFD54A,
                 true
         );
-    }
-
-    private static void drawBorder(
-            GuiGraphics graphics,
-            int x,
-            int y,
-            int width,
-            int height,
-            int color
-    ) {
-
-        graphics.fill(x, y, x + width, y + 1, color);
-        graphics.fill(x, y + height - 1, x + width, y + height, color);
-        graphics.fill(x, y, x + 1, y + height, color);
-        graphics.fill(x + width - 1, y, x + width, y + height, color);
     }
 }
