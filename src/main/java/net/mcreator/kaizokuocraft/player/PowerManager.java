@@ -7,16 +7,7 @@ public final class PowerManager {
     private PowerManager() {
     }
 
-    /**
-     * Level'a göre genel hasar çarpanını hesaplar.
-     *
-     * Formül:
-     * 1 + ln(level + 1) * 0.25
-     *
-     * Bu değer ileride fighting style, Haki, Devil Fruit,
-     * race vb. bonuslarla birlikte kullanılacaktır.
-     */
-    public static double getDamageMultiplier(long level) {
+    public static double getLevelDamageMultiplier(long level) {
         if (level < 1L) {
             level = 1L;
         }
@@ -25,8 +16,28 @@ public final class PowerManager {
     }
 
     public static double getDamageMultiplier(ServerPlayer player) {
-        return getDamageMultiplier(
-                PlayerDataManager.getLevel(player)
-        );
+        PlayerData data = PlayerDataManager.get(player);
+
+        double levelMultiplier =
+                getLevelDamageMultiplier(data.getLevel());
+
+        double raceMultiplier =
+                data.getRace().getDamageMultiplier();
+
+        return levelMultiplier * raceMultiplier;
+    }
+
+    public static double getDefenseMultiplier(ServerPlayer player) {
+        return PlayerDataManager
+                .get(player)
+                .getRace()
+                .getDefenseMultiplier();
+    }
+
+    public static double getSpeedMultiplier(ServerPlayer player) {
+        return PlayerDataManager
+                .get(player)
+                .getRace()
+                .getSpeedMultiplier();
     }
 }
