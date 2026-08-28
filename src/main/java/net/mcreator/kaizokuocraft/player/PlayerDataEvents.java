@@ -21,6 +21,8 @@ public final class PlayerDataEvents {
 
         PlayerData data = PlayerDataManager.get(player);
 
+        RaceManager.applyRace(player);
+
         PacketDistributor.sendToPlayer(
                 player,
                 new SyncPlayerDataPacket(
