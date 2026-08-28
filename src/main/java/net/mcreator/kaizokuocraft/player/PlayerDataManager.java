@@ -27,24 +27,26 @@ public final class PlayerDataManager {
     }
 
     public static void addExperience(ServerPlayer player, long amount) {
-        if (amount <= 0) {
-            return;
-        }
-
-        PlayerData data = get(player);
-        data.addExperience(amount);
-
-        while (data.getExperience() >= getRequiredExperience(data.getLevel())) {
-            long required = getRequiredExperience(data.getLevel());
-
-            data.setExperience(data.getExperience() - required);
-            data.setLevel(data.getLevel() + 1);
-
-            player.sendSystemMessage(
-                    net.minecraft.network.chat.Component.literal(
-                            "§6Kaizoku-ō Craft §7| §eLEVEL UP! §f→ Level §e" + data.getLevel()
-                    )
-            );
-        }
+    if (amount <= 0) {
+        return;
     }
+
+    PlayerData data = get(player);
+    data.addExperience(amount);
+
+    while (data.getExperience() >= getRequiredExperience(data.getLevel())) {
+        long required = getRequiredExperience(data.getLevel());
+
+        data.setExperience(data.getExperience() - required);
+        data.setLevel(data.getLevel() + 1);
+    }
+
+    PacketDistributor.sendToPlayer(
+            player,
+            new SyncPlayerDataPacket(
+                    data.getLevel(),
+                    data.getExperience()
+            )
+    );
+}
 }
