@@ -17,6 +17,8 @@ import net.minecraft.server.TickTask;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.FriendlyByteBuf;
+import net.mcreator.kaizokuocraft.player.ModAttachments;
+import net.mcreator.kaizokuocraft.player.PlayerDataEvents;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
