@@ -1,9 +1,12 @@
 package net.mcreator.kaizokuocraft.player;
 
-import net.minecraft.network.chat.Component;
+import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
+
 import net.minecraft.server.level.ServerPlayer;
+
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class PlayerDataEvents {
 
@@ -17,16 +20,12 @@ public final class PlayerDataEvents {
         }
 
         PlayerData data = PlayerDataManager.get(player);
-        long requiredXp = PlayerDataManager.getRequiredExperience(data.getLevel());
 
-        player.sendSystemMessage(
-                Component.literal(
-                        "§6Kaizoku-ō Craft §7| §fLevel: §e"
-                                + data.getLevel()
-                                + " §7| §fXP: §e"
-                                + data.getExperience()
-                                + "§7/§e"
-                                + requiredXp
+        PacketDistributor.sendToPlayer(
+                player,
+                new SyncPlayerDataPacket(
+                        data.getLevel(),
+                        data.getExperience()
                 )
         );
     }
