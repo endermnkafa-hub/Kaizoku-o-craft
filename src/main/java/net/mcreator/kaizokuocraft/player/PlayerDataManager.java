@@ -19,7 +19,8 @@ public final class PlayerDataManager {
 	}
 
 	public static void setRace(ServerPlayer player, RaceType race) {
-    	get(player).setRace(race);
+    get(player).setRace(race);
+    RaceManager.applyRace(player);
 	}
 
     public static long getLevel(ServerPlayer player) {
