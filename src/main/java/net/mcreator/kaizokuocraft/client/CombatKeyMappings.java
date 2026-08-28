@@ -2,19 +2,7 @@ package net.mcreator.kaizokuocraft.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
-
 import org.lwjgl.glfw.GLFW;
-
-@EventBusSubscriber(
-        modid = "kaizoku_o_craft",
-        bus = Mod.EventBusSubscriber.Bus.MOD,
-        value = net.neoforged.api.distmarker.Dist.CLIENT
-)
 
 public final class CombatKeyMappings {
 
@@ -27,17 +15,5 @@ public final class CombatKeyMappings {
             );
 
     private CombatKeyMappings() {
-    }
-
-    @SubscribeEvent
-    public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(TOGGLE_COMBAT);
-    }
-
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
-        while (TOGGLE_COMBAT.consumeClick()) {
-            CombatState.toggle();
-        }
     }
 }
