@@ -6,15 +6,15 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
 
 public class PlayerData implements INBTSerializable<CompoundTag> {
 
-    private int level = 1;
+    private long level = 1L;
     private long experience = 0L;
 
-    public int getLevel() {
+    public long getLevel() {
         return level;
     }
 
-    public void setLevel(int level) {
-        this.level = Math.max(1, level);
+    public void setLevel(long level) {
+        this.level = Math.max(1L, level);
     }
 
     public long getExperience() {
@@ -35,7 +35,7 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
 
-        tag.putInt("Level", level);
+        tag.putLong("Level", level);
         tag.putLong("Experience", experience);
 
         return tag;
@@ -43,7 +43,7 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
-        level = Math.max(1, tag.getInt("Level"));
+        level = Math.max(1L, tag.getLong("Level"));
         experience = Math.max(0L, tag.getLong("Experience"));
     }
 }
