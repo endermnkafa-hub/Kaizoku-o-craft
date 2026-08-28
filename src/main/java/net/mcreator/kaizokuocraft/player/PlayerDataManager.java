@@ -19,6 +19,10 @@ public final class PlayerDataManager {
         return get(player).getExperience();
     }
 
+    public static long getRequiredExperience(long level) {
+        return 100L + (level * 25L);
+    }
+
     public static void addExperience(ServerPlayer player, long amount) {
         if (amount <= 0) {
             return;
@@ -32,16 +36,12 @@ public final class PlayerDataManager {
 
             data.setExperience(data.getExperience() - required);
             data.setLevel(data.getLevel() + 1);
-        }
-    }
 
-    public static long getRequiredExperience(long level) {
-        if (level <= 1) {
-            return 100;
+            player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.literal(
+                            "§6Kaizoku-ō Craft §7| §eLEVEL UP! §f→ Level §e" + data.getLevel()
+                    )
+            );
         }
-
-        // Level yükseldikçe gereken XP artar.
-        // Daha sonra dengelemek için bu formülü değiştirebiliriz.
-        return 100L + (level * 25L);
     }
 }
