@@ -44,15 +44,11 @@ public class KaizokuOCraftMod {
 
 	public KaizokuOCraftMod(IEventBus modEventBus) {
 		// Start of user code block mod constructor
+		NeoForge.EVENT_BUS.register(KaizokuHud.class);
 		ModAttachments.register(modEventBus);
 		NeoForge.EVENT_BUS.register(PlayerDataEvents.class);
 		NeoForge.EVENT_BUS.register(ExperienceEvents.class);
-
-		addNetworkMessage(
-        		SyncPlayerDataPacket.TYPE,
-        		SyncPlayerDataPacket.STREAM_CODEC,
-        		SyncPlayerDataPacket::handle
-);
+		addNetworkMessage(SyncPlayerDataPacket.TYPE, SyncPlayerDataPacket.STREAM_CODEC, SyncPlayerDataPacket::handle);
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
