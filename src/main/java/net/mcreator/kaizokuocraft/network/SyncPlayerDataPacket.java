@@ -10,7 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import com.mojang.serialization.Codec;
 
 import net.minecraft.network.codec.StreamCodec;
 
