@@ -32,8 +32,18 @@ public final class PlayerDataManager {
     }
 
     public static long getRequiredExperience(long level) {
-        return 100L + (level * 25L);
-    }
+	    if (level < 1L) {
+	        level = 1L;
+	    }
+	
+	    double required = 100.0D * Math.pow(level, 1.5D);
+	
+	    if (required >= Long.MAX_VALUE) {
+	        return Long.MAX_VALUE;
+	    }
+	
+	    return Math.max(100L, (long) required);
+	}
 
     public static void addExperience(ServerPlayer player, long amount) {
     if (amount <= 0) {
