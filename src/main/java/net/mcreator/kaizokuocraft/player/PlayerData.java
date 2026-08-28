@@ -9,6 +9,8 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
     private long level = 1L;
     private long experience = 0L;
 
+    private RaceType race = RaceType.HUMAN;
+
     public long getLevel() {
         return level;
     }
@@ -31,12 +33,21 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
         }
     }
 
+    public RaceType getRace() {
+        return race;
+    }
+
+    public void setRace(RaceType race) {
+        this.race = race == null ? RaceType.HUMAN : race;
+    }
+
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
 
         tag.putLong("Level", level);
         tag.putLong("Experience", experience);
+        tag.putString("Race", race.name());
 
         return tag;
     }
@@ -45,5 +56,13 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
         level = Math.max(1L, tag.getLong("Level"));
         experience = Math.max(0L, tag.getLong("Experience"));
+
+        String raceName = tag.getString("Race");
+
+        try {
+            race = RaceType.valueOf(raceName);
+        } catch (IllegalArgumentException exception) {
+            race = RaceType.HUMAN;
+        }
     }
 }
