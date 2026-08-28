@@ -38,6 +38,7 @@ public class KaizokuOCraftMod {
 		// Start of user code block mod constructor
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
+		ModAttachments.register(modEventBus);
 		modEventBus.addListener(this::registerNetworking);
 		// Start of user code block mod init
 		// End of user code block mod init
