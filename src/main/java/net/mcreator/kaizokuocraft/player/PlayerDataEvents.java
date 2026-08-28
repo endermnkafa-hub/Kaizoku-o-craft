@@ -26,9 +26,10 @@ public final class PlayerDataEvents {
         PacketDistributor.sendToPlayer(
                 player,
                 new SyncPlayerDataPacket(
-                        data.getLevel(),
-                        data.getExperience()
-                )
+        			data.getLevel(),
+        			data.getExperience(),
+        			data.getRace()
+				)
         );
     }
 
