@@ -15,3 +15,6 @@
 /kaizoku_race mink
 /kaizoku_xp 9999999999
 /kaizoku_xp 999999999999999999
+/kaizoku_level reset
+/kaizoku_level set 10
+/kaizoku_xp set 20
