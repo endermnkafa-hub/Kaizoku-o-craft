@@ -22,6 +22,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.mcreator.kaizokuocraft.player.PlayerDataEvents;
 import net.mcreator.kaizokuocraft.player.ModAttachments;
 import net.mcreator.kaizokuocraft.player.ExperienceCommand;
+import net.mcreator.kaizokuocraft.player.ExperienceEvents;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
