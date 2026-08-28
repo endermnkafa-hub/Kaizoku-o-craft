@@ -17,9 +17,10 @@ import net.minecraft.server.TickTask;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.FriendlyByteBuf;
-
-import net.mcreator.kaizokuocraft.player.PlayerDataEvents;
 import net.mcreator.kaizokuocraft.player.ModAttachments;
+import net.mcreator.kaizokuocraft.player.PlayerDataEvents;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.mcreator.kaizokuocraft.player.ExperienceCommand;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
@@ -48,6 +49,10 @@ public class KaizokuOCraftMod {
 	}
 
 	// Start of user code block mod methods
+	@SubscribeEvent
+	public void registerCommands(RegisterCommandsEvent event) {
+    	ExperienceCommand.register(event.getDispatcher());
+	}
 	// End of user code block mod methods
 	private static boolean networkingRegistered = false;
 	private static final Map<CustomPacketPayload.Type<?>, NetworkMessage<?>> MESSAGES = new HashMap<>();
@@ -74,6 +79,11 @@ public class KaizokuOCraftMod {
 	public static void queueServerWork(int delay, Runnable action) {
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER)
 			workToBeScheduled.add(new IntObjectImmutablePair<>(delay, action));
+	}
+
+	@SubscribeEvent
+	public void registerCommands(RegisterCommandsEvent event) {
+    	ExperienceCommand.register(event.getDispatcher());
 	}
 
 	@SubscribeEvent
