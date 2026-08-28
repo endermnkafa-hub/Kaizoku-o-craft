@@ -26,14 +26,18 @@ public final class ExperienceCommand {
 
                                             PlayerData data = PlayerDataManager.get(player);
 
+                                            double damageMultiplier =
+                                                    PowerManager.getDamageMultiplier(player);
+
                                             context.getSource().sendSuccess(
                                                     () -> Component.literal(
-                                                            "§6Kaizoku-ō Craft §7| §fXP eklendi: §e"
-                                                                    + amount
-                                                                    + " §7| §fLevel: §e"
-                                                                    + data.getLevel()
-                                                                    + " §7| §fXP: §e"
+                                                            "§6Kaizoku-ō Craft §7| "
+                                                                    + "§fXP: §e"
                                                                     + data.getExperience()
+                                                                    + " §7| Level: §e"
+                                                                    + data.getLevel()
+                                                                    + " §7| Damage: §e×"
+                                                                    + String.format("%.2f", damageMultiplier)
                                                     ),
                                                     true
                                             );
