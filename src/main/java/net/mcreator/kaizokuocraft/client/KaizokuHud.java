@@ -45,8 +45,14 @@ public final class KaizokuHud {
                         (double) experience / (double) requiredExperience
                 );
 
-        double multiplier =
+        double levelMultiplier =
         PowerManager.getLevelDamageMultiplier(level);
+
+		double raceMultiplier =
+		        ClientPlayerData.getRace().getDamageMultiplier();
+		
+		double multiplier =
+		        levelMultiplier * raceMultiplier;
 
         int x = 8;
         int y = 8;
