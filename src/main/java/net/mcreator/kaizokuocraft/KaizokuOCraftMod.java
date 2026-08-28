@@ -26,6 +26,7 @@ import net.mcreator.kaizokuocraft.player.ExperienceEvents;
 import net.mcreator.kaizokuocraft.player.ExperienceCommand;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
+import net.mcreator.kaizokuocraft.player.RaceCommand;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
