@@ -56,6 +56,7 @@ public class KaizokuOCraftMod {
 	@SubscribeEvent
 	public void registerCommands(RegisterCommandsEvent event) {
 		ExperienceCommand.register(event.getDispatcher());
+		PowerCommand.register(event.getDispatcher());
 	}
 
 	// End of user code block mod methods
