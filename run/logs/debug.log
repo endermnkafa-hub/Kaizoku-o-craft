@@ -475,3 +475,4 @@
 [29Aug2026 00:59:55.332] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
 [29Aug2026 00:59:55.347] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
 [29Aug2026 00:59:55.378] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
+[29Aug2026 01:00:39.327] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
