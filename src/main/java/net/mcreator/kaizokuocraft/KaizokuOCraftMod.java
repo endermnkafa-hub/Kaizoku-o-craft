@@ -37,6 +37,8 @@ public class KaizokuOCraftMod {
 
 	public KaizokuOCraftMod(IEventBus modEventBus) {
 		// Start of user code block mod constructor
+		ModAttachments.register(modEventBus);
+		NeoForge.EVENT_BUS.register(PlayerDataEvents.class);
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
