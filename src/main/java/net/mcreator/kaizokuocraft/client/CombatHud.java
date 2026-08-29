@@ -13,8 +13,9 @@ public final class CombatHud {
     private static final int SLOT_HEIGHT = 40;
     private static final int SLOT_GAP = 2;
 
-    private static final int STAMINA_WIDTH = 22;
-    private static final int STAMINA_GAP = 3;
+    private static final int STAMINA_WIDTH = 82;
+    private static final int STAMINA_HEIGHT = 12;
+    private static final int STAMINA_GAP = 5;
 
     private static final float ANIMATION_DISTANCE = 18.0F;
     private static final double ANIMATION_SPEED = 0.18D;
@@ -115,7 +116,8 @@ public final class CombatHud {
 
         double easedProgress =
                 1.0D - Math.pow(
-                        1.0D - animationProgress,
+                        1.0D
+                                - animationProgress,
                         3.0D
                 );
 
@@ -158,14 +160,18 @@ public final class CombatHud {
                                 - totalWidth
                 ) / 2;
 
+        /*
+         * Combat Bar'ı vanilla can/açlık
+         * satırının üstüne taşıyoruz.
+         */
         int y =
                 screenHeight
                         - SLOT_HEIGHT
-                        - 6
+                        - 48
                         + animationOffset;
 
         /*
-         * SKILL BAR
+         * SKILL SLOTLARI
          */
         for (
                 int slot = 0;
@@ -202,11 +208,17 @@ public final class CombatHud {
                         + skillWidth
                         + STAMINA_GAP;
 
+        int staminaY =
+                y
+                        + (
+                        SLOT_HEIGHT
+                                - STAMINA_HEIGHT
+                        ) / 2;
+
         drawStamina(
                 graphics,
-                minecraft,
                 staminaX,
-                y
+                staminaY
         );
     }
 
@@ -219,6 +231,9 @@ public final class CombatHud {
             String key
     ) {
 
+        /*
+         * Arka plan
+         */
         graphics.fill(
                 x,
                 y,
@@ -227,6 +242,9 @@ public final class CombatHud {
                 0xD0181818
         );
 
+        /*
+         * Cooldown
+         */
         long remaining =
                 skill == null
                         ? 0L
@@ -235,31 +253,34 @@ public final class CombatHud {
                                         skill.id()
                                 );
 
-        boolean cooldown =
+        boolean onCooldown =
                 remaining > 0L;
 
         /*
-         * Cooldown arka planı.
+         * Cooldown'un karanlık arka planı.
          */
-        if (cooldown) {
+        if (onCooldown) {
 
             graphics.fill(
                     x,
                     y,
                     x + SLOT_WIDTH,
                     y + SLOT_HEIGHT,
-                    0xAA080808
+                    0xBB080808
             );
         }
 
+        /*
+         * Kenarlık
+         */
         drawBorder(
                 graphics,
                 x,
                 y,
                 SLOT_WIDTH,
                 SLOT_HEIGHT,
-                cooldown
-                        ? 0xFF555555
+                onCooldown
+                        ? 0xFF666666
                         : 0xFF999999
         );
 
@@ -269,13 +290,16 @@ public final class CombatHud {
                     minecraft.font,
                     "?",
                     x + SLOT_WIDTH / 2,
-                    y + 8,
+                    y + 10,
                     0xFF666666
             );
 
             return;
         }
 
+        /*
+         * İkon
+         */
         ItemStack icon =
                 skill.icon();
 
@@ -288,6 +312,9 @@ public final class CombatHud {
             );
         }
 
+        /*
+         * İsim
+         */
         String name =
                 skill.name().length() > 4
                         ? skill.name().substring(
@@ -304,6 +331,9 @@ public final class CombatHud {
                 0xFFFFFFFF
         );
 
+        /*
+         * Tuş
+         */
         graphics.drawCenteredString(
                 minecraft.font,
                 key,
@@ -313,10 +343,9 @@ public final class CombatHud {
         );
 
         /*
-         * Cooldown yazısı artık skillin
-         * üstünde, okunabilir şekilde.
+         * COOLDOWN SAYACI
          */
-        if (cooldown) {
+        if (onCooldown) {
 
             String timeText;
 
@@ -332,26 +361,22 @@ public final class CombatHud {
             } else {
 
                 timeText =
-                        String.valueOf(
-                                Math.max(
-                                        0L,
-                                        remaining
-                                                / 100L
-                                )
+                        String.format(
+                                "%.1f",
+                                remaining
+                                        / 1000.0D
                         );
             }
 
-            int boxLeft =
-                    x + 2;
-
-            int boxTop =
-                    y + 11;
-
+            /*
+             * Sayacın arkasında küçük siyah
+             * kutu.
+             */
             graphics.fill(
-                    boxLeft,
-                    boxTop,
-                    x + SLOT_WIDTH - 2,
-                    boxTop + 11,
+                    x + 3,
+                    y + 11,
+                    x + SLOT_WIDTH - 3,
+                    y + 21,
                     0xDD000000
             );
 
@@ -359,12 +384,12 @@ public final class CombatHud {
                     minecraft.font,
                     timeText,
                     x + SLOT_WIDTH / 2,
-                    boxTop + 1,
+                    y + 12,
                     0xFFFFFFFF
             );
 
             /*
-             * Cooldown ilerleme çizgisi
+             * Cooldown ilerleme çizgisi.
              */
             double progress =
                     SkillCooldownClient.getProgress(
@@ -372,20 +397,18 @@ public final class CombatHud {
                             skill.cooldownMillis()
                     );
 
-            int progressWidth =
+            int width =
                     (int) (
                             SLOT_WIDTH
                                     * progress
                     );
 
-            if (
-                    progressWidth > 0
-            ) {
+            if (width > 0) {
 
                 graphics.fill(
                         x,
                         y + SLOT_HEIGHT - 2,
-                        x + progressWidth,
+                        x + width,
                         y + SLOT_HEIGHT,
                         0xFF777777
                 );
@@ -395,71 +418,67 @@ public final class CombatHud {
 
     private static void drawStamina(
             GuiGraphics graphics,
-            Minecraft minecraft,
             int x,
             int y
     ) {
 
+        /*
+         * XP bar benzeri stamina bar.
+         */
         graphics.fill(
                 x,
                 y,
                 x + STAMINA_WIDTH,
-                y + SLOT_HEIGHT,
-                0xD0181818
-        );
-
-        drawBorder(
-                graphics,
-                x,
-                y,
-                STAMINA_WIDTH,
-                SLOT_HEIGHT,
-                0xFF777777
+                y + STAMINA_HEIGHT,
+                0xFF181818
         );
 
         double percentage =
                 ClientStamina.getPercentage();
 
-        int barHeight =
-                SLOT_HEIGHT - 12;
-
-        graphics.fill(
-                x + 5,
-                y + 5,
-                x + STAMINA_WIDTH - 5,
-                y + 5 + barHeight,
-                0xFF303030
-        );
-
         int filled =
                 (int) (
-                        barHeight
+                        STAMINA_WIDTH
                                 * percentage
                 );
 
-        if (
-                filled > 0
-        ) {
-
-            int top =
-                    y + 5
-                            + barHeight
-                            - filled;
+        if (filled > 0) {
 
             graphics.fill(
-                    x + 5,
-                    top,
-                    x + STAMINA_WIDTH - 5,
-                    y + 5 + barHeight,
+                    x,
+                    y,
+                    x + filled,
+                    y + STAMINA_HEIGHT,
                     0xFFFFD54A
             );
         }
 
+        /*
+         * İnce üst ışık çizgisi.
+         */
+        graphics.fill(
+                x,
+                y,
+                x + STAMINA_WIDTH,
+                y + 1,
+                0xFFAAAAAA
+        );
+
+        /*
+         * Stamina yazısı.
+         */
+        String text =
+                String.format(
+                        "STA %.0f/%.0f",
+                        ClientStamina.getStamina(),
+                        ClientStamina.getMaxStamina()
+                );
+
         graphics.drawCenteredString(
-                minecraft.font,
-                "S",
+                Minecraft.getInstance().font,
+                text,
                 x + STAMINA_WIDTH / 2,
-                y + SLOT_HEIGHT - 8,
+                y - 11,
                 0xFFFFFFFF
         );
     }
