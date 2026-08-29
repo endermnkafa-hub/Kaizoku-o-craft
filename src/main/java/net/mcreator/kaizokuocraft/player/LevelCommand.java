@@ -25,7 +25,6 @@ public final class LevelCommand {
                 Commands.literal(
                         "kaizoku_level"
                 )
-
                         .requires(
                                 source ->
                                         source.hasPermission(2)
@@ -35,7 +34,6 @@ public final class LevelCommand {
                                 Commands.literal(
                                         "set"
                                 )
-
                                         .then(
                                                 Commands.argument(
                                                         "level",
@@ -43,7 +41,6 @@ public final class LevelCommand {
                                                                 1
                                                         )
                                                 )
-
                                                         .executes(
                                                                 context -> {
 
@@ -67,17 +64,25 @@ public final class LevelCommand {
                                                                     );
 
                                                                     /*
-                                                                     * Max stamina
-                                                                     * yeni level'a göre.
+                                                                     * Level değiştiği için
+                                                                     * max stamina da hemen
+                                                                     * yeni level'a göre
+                                                                     * hesaplanır.
                                                                      */
                                                                     StaminaManager.updateMaxStamina(
                                                                             player
                                                                     );
 
+                                                                    /*
+                                                                     * Player data sync
+                                                                     */
                                                                     sync(
                                                                             player
                                                                     );
 
+                                                                    /*
+                                                                     * Stamina sync
+                                                                     */
                                                                     StaminaManager.sync(
                                                                             player
                                                                     );
@@ -102,7 +107,6 @@ public final class LevelCommand {
                                 Commands.literal(
                                         "reset"
                                 )
-
                                         .executes(
                                                 context -> {
 
@@ -123,22 +127,30 @@ public final class LevelCommand {
                                                             0L
                                                     );
 
+                                                    /*
+                                                     * Level 1 max stamina.
+                                                     */
                                                     StaminaManager.updateMaxStamina(
                                                             player
                                                     );
 
                                                     /*
-                                                     * Reset dediğimiz için
-                                                     * stamina'yı da full yap.
+                                                     * Reset sonrası full stamina.
                                                      */
                                                     data.setStamina(
                                                             data.getMaxStamina()
                                                     );
 
+                                                    /*
+                                                     * Player data sync
+                                                     */
                                                     sync(
                                                             player
                                                     );
 
+                                                    /*
+                                                     * Stamina sync
+                                                     */
                                                     StaminaManager.sync(
                                                             player
                                                     );

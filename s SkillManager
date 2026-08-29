@@ -1,0 +1,735 @@
+[1mdiff --git a/src/main/java/net/mcreator/kaizokuocraft/player/SkillManager.java b/src/main/java/net/mcreator/kaizokuocraft/player/SkillManager.java[m
+[1mindex 95b3775..6d4f08e 100644[m
+[1m--- a/src/main/java/net/mcreator/kaizokuocraft/player/SkillManager.java[m
+[1m+++ b/src/main/java/net/mcreator/kaizokuocraft/player/SkillManager.java[m
+[36m@@ -1,165 +1,254 @@[m
+ package net.mcreator.kaizokuocraft.player;[m
+ [m
+[31m-import com.mojang.brigadier.CommandDispatcher;[m
+[31m-import com.mojang.brigadier.arguments.LongArgumentType;[m
+[32m+[m[32mimport net.minecraft.server.level.ServerPlayer;[m
+[32m+[m[32mimport net.minecraft.world.effect.MobEffectInstance;[m
+[32m+[m[32mimport net.minecraft.world.effect.MobEffects;[m
+[32m+[m[32mimport net.minecraft.world.entity.LivingEntity;[m
+[32m+[m[32mimport net.minecraft.world.phys.AABB;[m
+[32m+[m[32mimport net.minecraft.world.phys.Vec3;[m
+ [m
+[31m-import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;[m
+[32m+[m[32mimport java.util.HashMap;[m
+[32m+[m[32mimport java.util.Map;[m
+[32m+[m[32mimport java.util.UUID;[m
+ [m
+[31m-import net.minecraft.commands.CommandSourceStack;[m
+[31m-import net.minecraft.commands.Commands;[m
+[31m-import net.minecraft.network.chat.Component;[m
+[31m-import net.minecraft.server.level.ServerPlayer;[m
+[32m+[m[32mpublic final class SkillManager {[m
+ [m
+[31m-import net.neoforged.neoforge.network.PacketDistributor;[m
+[32m+[m[32m    private static final Map<[m
+[32m+[m[32m            UUID,[m
+[32m+[m[32m            Map<String, Long>[m
+[32m+[m[32m            > COOLDOWNS =[m
+[32m+[m[32m            new HashMap<>();[m
+ [m
+[31m-public final class LevelCommand {[m
+[32m+[m[32m    private static final long DASH_UNLOCK_LEVEL =[m
+[32m+[m[32m            10L;[m
+ [m
+[31m-    private LevelCommand() {[m
+[32m+[m[32m    private SkillManager() {[m
+     }[m
+ [m
+[31m-    public static void register([m
+[31m-            CommandDispatcher<CommandSourceStack> dispatcher[m
+[32m+[m[32m    public static void useSkill([m
+[32m+[m[32m            ServerPlayer player,[m
+[32m+[m[32m            String skillId[m
+     ) {[m
+ [m
+[31m-        dispatcher.register([m
+[31m-                Commands.literal([m
+[31m-                        "kaizoku_level"[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                skillId == null[m
+[32m+[m[32m                        || skillId.isBlank()[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (!isKnownSkill(skillId)) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        /*[m
+[32m+[m[32m         * Dash normal skill değil.[m
+[32m+[m[32m         */[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                skillId.equals("dash")[m
+[32m+[m[32m        ) {[m
+[32m+[m
+[32m+[m[32m            useDash(player);[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        long now =[m
+[32m+[m[32m                System.currentTimeMillis();[m
+[32m+[m
+[32m+[m[32m        long cooldown =[m
+[32m+[m[32m                getCooldown([m
+[32m+[m[32m                        skillId[m
+[32m+[m[32m                );[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                !isReady([m
+[32m+[m[32m                        player,[m
+[32m+[m[32m                        skillId,[m
+[32m+[m[32m                        now[m
+                 )[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+ [m
+[31m-                        .requires([m
+[31m-                                source ->[m
+[31m-                                        source.hasPermission(2)[m
+[31m-                        )[m
+[32m+[m[32m        double staminaCost =[m
+[32m+[m[32m                getStaminaCost([m
+[32m+[m[32m                        skillId[m
+[32m+[m[32m                );[m
+ [m
+[31m-                        .then([m
+[31m-                                Commands.literal([m
+[31m-                                        "set"[m
+[31m-                                )[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                !StaminaManager.consume([m
+[32m+[m[32m                        player,[m
+[32m+[m[32m                        staminaCost[m
+[32m+[m[32m                )[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+ [m
+[31m-                                        .then([m
+[31m-                                                Commands.argument([m
+[31m-                                                        "level",[m
+[31m-                                                        LongArgumentType.longArg([m
+[31m-                                                                1[m
+[31m-                                                        )[m
+[31m-                                                )[m
+[31m-[m
+[31m-                                                        .executes([m
+[31m-                                                                context -> {[m
+[31m-[m
+[31m-                                                                    ServerPlayer player =[m
+[31m-                                                                            context.getSource()[m
+[31m-                                                                                    .getPlayerOrException();[m
+[31m-[m
+[31m-                                                                    long level =[m
+[31m-                                                                            LongArgumentType.getLong([m
+[31m-                                                                                    context,[m
+[31m-                                                                                    "level"[m
+[31m-                                                                            );[m
+[31m-[m
+[31m-                                                                    PlayerData data =[m
+[31m-                                                                            PlayerDataManager.get([m
+[31m-                                                                                    player[m
+[31m-                                                                            );[m
+[31m-[m
+[31m-                                                                    data.setLevel([m
+[31m-                                                                            level[m
+[31m-                                                                    );[m
+[31m-[m
+[31m-                                                                    /*[m
+[31m-                                                                     * Max stamina[m
+[31m-                                                                     * yeni level'a göre.[m
+[31m-                                                                     */[m
+[31m-                                                                    StaminaManager.updateMaxStamina([m
+[31m-                                                                            player[m
+[31m-                                                                    );[m
+[31m-[m
+[31m-                                                                    sync([m
+[31m-                                                                            player[m
+[31m-                                                                    );[m
+[31m-[m
+[31m-                                                                    StaminaManager.sync([m
+[31m-                                                                            player[m
+[31m-                                                                    );[m
+[31m-[m
+[31m-                                                                    context.getSource()[m
+[31m-                                                                            .sendSuccess([m
+[31m-                                                                                    () ->[m
+[31m-                                                                                            Component.literal([m
+[31m-                                                                                                    "§6Kaizoku-ō Craft §7| §fLevel: §e"[m
+[31m-                                                                                                            + level[m
+[31m-                                                                                            ),[m
+[31m-                                                                                    true[m
+[31m-                                                                            );[m
+[31m-[m
+[31m-                                                                    return 1;[m
+[31m-                                                                }[m
+[31m-                                                        )[m
+[31m-                                        )[m
+[31m-                        )[m
+[32m+[m[32m        switch (skillId) {[m
+ [m
+[31m-                        .then([m
+[31m-                                Commands.literal([m
+[31m-                                        "reset"[m
+[31m-                                )[m
+[32m+[m[32m            case "punch" -> punch([m
+[32m+[m[32m                    player,[m
+[32m+[m[32m                    1.0D[m
+[32m+[m[32m            );[m
+ [m
+[31m-                                        .executes([m
+[31m-                                                context -> {[m
+[31m-[m
+[31m-                                                    ServerPlayer player =[m
+[31m-                                                            context.getSource()[m
+[31m-                                                                    .getPlayerOrException();[m
+[31m-[m
+[31m-                                                    PlayerData data =[m
+[31m-                                                            PlayerDataManager.get([m
+[31m-                                                                    player[m
+[31m-                                                            );[m
+[31m-[m
+[31m-                                                    data.setLevel([m
+[31m-                                                            1L[m
+[31m-                                                    );[m
+[31m-[m
+[31m-                                                    data.setExperience([m
+[31m-                                                            0L[m
+[31m-                                                    );[m
+[31m-[m
+[31m-                                                    StaminaManager.updateMaxStamina([m
+[31m-                                                            player[m
+[31m-                                                    );[m
+[31m-[m
+[31m-                                                    /*[m
+[31m-                                                     * Reset dediğimiz için[m
+[31m-                                                     * stamina'yı da full yap.[m
+[31m-                                                     */[m
+[31m-                                                    data.setStamina([m
+[31m-                                                            data.getMaxStamina()[m
+[31m-                                                    );[m
+[31m-[m
+[31m-                                                    sync([m
+[31m-                                                            player[m
+[31m-                                                    );[m
+[31m-[m
+[31m-                                                    StaminaManager.sync([m
+[31m-                                                            player[m
+[31m-                                                    );[m
+[31m-[m
+[31m-                                                    context.getSource()[m
+[31m-                                                            .sendSuccess([m
+[31m-                                                                    () ->[m
+[31m-                                                                            Component.literal([m
+[31m-                                                                                    "§6Kaizoku-ō Craft §7| §fLevel ve XP sıfırlandı."[m
+[31m-                                                                            ),[m
+[31m-                                                                    true[m
+[31m-                                                            );[m
+[31m-[m
+[31m-                                                    return 1;[m
+[31m-                                                }[m
+[31m-                                        )[m
+[31m-                        )[m
+[32m+[m[32m            case "heavy_punch" -> punch([m
+[32m+[m[32m                    player,[m
+[32m+[m[32m                    1.8D[m
+[32m+[m[32m            );[m
+[32m+[m
+[32m+[m[32m            case "shockwave" -> shockwave([m
+[32m+[m[32m                    player[m
+[32m+[m[32m            );[m
+[32m+[m
+[32m+[m[32m            case "uppercut" -> uppercut([m
+[32m+[m[32m                    player[m
+[32m+[m[32m            );[m
+[32m+[m
+[32m+[m[32m            case "guard" -> guard([m
+[32m+[m[32m                    player[m
+[32m+[m[32m            );[m
+[32m+[m
+[32m+[m[32m            default -> {[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        setCooldown([m
+[32m+[m[32m                player,[m
+[32m+[m[32m                skillId,[m
+[32m+[m[32m                now + cooldown[m
+[32m+[m[32m        );[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static boolean isKnownSkill([m
+[32m+[m[32m            String skillId[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        return skillId.equals("punch")[m
+[32m+[m[32m                || skillId.equals("heavy_punch")[m
+[32m+[m[32m                || skillId.equals("shockwave")[m
+[32m+[m[32m                || skillId.equals("uppercut")[m
+[32m+[m[32m                || skillId.equals("guard")[m
+[32m+[m[32m                || skillId.equals("dash");[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static double getStaminaCost([m
+[32m+[m[32m            String skillId[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        return switch (skillId) {[m
+[32m+[m
+[32m+[m[32m            case "punch" ->[m
+[32m+[m[32m                    10.0D;[m
+[32m+[m
+[32m+[m[32m            case "heavy_punch" ->[m
+[32m+[m[32m                    20.0D;[m
+[32m+[m
+[32m+[m[32m            case "shockwave" ->[m
+[32m+[m[32m                    25.0D;[m
+[32m+[m
+[32m+[m[32m            case "uppercut" ->[m
+[32m+[m[32m                    18.0D;[m
+[32m+[m
+[32m+[m[32m            case "guard" ->[m
+[32m+[m[32m                    30.0D;[m
+[32m+[m
+[32m+[m[32m            case "dash" ->[m
+[32m+[m[32m                    20.0D;[m
+[32m+[m
+[32m+[m[32m            default ->[m
+[32m+[m[32m                    0.0D;[m
+[32m+[m[32m        };[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static double getSkillStaminaCost([m
+[32m+[m[32m            String skillId[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        return getStaminaCost([m
+[32m+[m[32m                skillId[m
+         );[m
+     }[m
+ [m
+[31m-    private static void sync([m
+[32m+[m[32m    public static long getCooldown([m
+[32m+[m[32m            String skillId[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        return switch (skillId) {[m
+[32m+[m
+[32m+[m[32m            case "punch" ->[m
+[32m+[m[32m                    350L;[m
+[32m+[m
+[32m+[m[32m            case "heavy_punch" ->[m
+[32m+[m[32m                    1200L;[m
+[32m+[m
+[32m+[m[32m            case "shockwave" ->[m
+[32m+[m[32m                    1800L;[m
+[32m+[m
+[32m+[m[32m            case "uppercut" ->[m
+[32m+[m[32m                    1300L;[m
+[32m+[m
+[32m+[m[32m            case "guard" ->[m
+[32m+[m[32m                    3000L;[m
+[32m+[m
+[32m+[m[32m            case "dash" ->[m
+[32m+[m[32m                    1000L;[m
+[32m+[m
+[32m+[m[32m            default ->[m
+[32m+[m[32m                    1000L;[m
+[32m+[m[32m        };[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static long getDashUnlockLevel() {[m
+[32m+[m[32m        return DASH_UNLOCK_LEVEL;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static boolean isReady([m
+[32m+[m[32m            ServerPlayer player,[m
+[32m+[m[32m            String skillId,[m
+[32m+[m[32m            long now[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        Map<String, Long>[m
+[32m+[m[32m                playerCooldowns =[m
+[32m+[m[32m                COOLDOWNS.get([m
+[32m+[m[32m                        player.getUUID()[m
+[32m+[m[32m                );[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                playerCooldowns == null[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return true;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        Long end =[m
+[32m+[m[32m                playerCooldowns.get([m
+[32m+[m[32m                        skillId[m
+[32m+[m[32m                );[m
+[32m+[m
+[32m+[m[32m        return end == null[m
+[32m+[m[32m                || now >= end;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static void setCooldown([m
+[32m+[m[32m            ServerPlayer player,[m
+[32m+[m[32m            String skillId,[m
+[32m+[m[32m            long end[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        COOLDOWNS[m
+[32m+[m[32m                .computeIfAbsent([m
+[32m+[m[32m                        player.getUUID(),[m
+[32m+[m[32m                        ignored ->[m
+[32m+[m[32m                                new HashMap<>()[m
+[32m+[m[32m                )[m
+[32m+[m[32m                .put([m
+[32m+[m[32m                        skillId,[m
+[32m+[m[32m                        end[m
+[32m+[m[32m                );[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static void useDash([m
+             ServerPlayer player[m
+     ) {[m
+ [m
+[36m@@ -168,13 +257,327 @@[m [mpublic final class LevelCommand {[m
+                         player[m
+                 );[m
+ [m
+[31m-        PacketDistributor.sendToPlayer([m
+[32m+[m[32m        if ([m
+[32m+[m[32m                data.getLevel()[m
+[32m+[m[32m                        < DASH_UNLOCK_LEVEL[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        long now =[m
+[32m+[m[32m                System.currentTimeMillis();[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                !isReady([m
+[32m+[m[32m                        player,[m
+[32m+[m[32m                        "dash",[m
+[32m+[m[32m                        now[m
+[32m+[m[32m                )[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                !StaminaManager.consume([m
+[32m+[m[32m                        player,[m
+[32m+[m[32m                        getStaminaCost("dash")[m
+[32m+[m[32m                )[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        Vec3 look =[m
+[32m+[m[32m                player.getLookAngle()[m
+[32m+[m[32m                        .normalize();[m
+[32m+[m
+[32m+[m[32m        Vec3 movement =[m
+[32m+[m[32m                look.scale([m
+[32m+[m[32m                        1.25D[m
+[32m+[m[32m                );[m
+[32m+[m
+[32m+[m[32m        player.setDeltaMovement([m
+[32m+[m[32m                movement.x,[m
+[32m+[m[32m                Math.max([m
+[32m+[m[32m                        0.0D,[m
+[32m+[m[32m                        player.getDeltaMovement().y[m
+[32m+[m[32m                ),[m
+[32m+[m[32m                movement.z[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        player.hurtMarked = true;[m
+[32m+[m
+[32m+[m[32m        setCooldown([m
+                 player,[m
+[31m-                new SyncPlayerDataPacket([m
+[31m-                        data.getLevel(),[m
+[31m-                        data.getExperience(),[m
+[31m-                        data.getRace()[m
+[32m+[m[32m                "dash",[m
+[32m+[m[32m                now + getCooldown("dash")[m
+[32m+[m[32m        );[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static void punch([m
+[32m+[m[32m            ServerPlayer player,[m
+[32m+[m[32m            double multiplier[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        LivingEntity target =[m
+[32m+[m[32m                findTarget([m
+[32m+[m[32m                        player,[m
+[32m+[m[32m                        3.5D[m
+[32m+[m[32m                );[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                target == null[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        float baseDamage =[m
+[32m+[m[32m                player.getAttackStrengthScale([m
+[32m+[m[32m                        0.0F[m
+[32m+[m[32m                ) * 5.0F;[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                baseDamage < 1.0F[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            baseDamage = 1.0F;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        double damage =[m
+[32m+[m[32m                baseDamage[m
+[32m+[m[32m                        * PowerManager.getDamageMultiplier([m
+[32m+[m[32m                                player[m
+[32m+[m[32m                        )[m
+[32m+[m[32m                        * multiplier;[m
+[32m+[m
+[32m+[m[32m        target.hurt([m
+[32m+[m[32m                player.damageSources()[m
+[32m+[m[32m                        .playerAttack([m
+[32m+[m[32m                                player[m
+[32m+[m[32m                        ),[m
+[32m+[m[32m                (float) damage[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        Vec3 direction =[m
+[32m+[m[32m                target.position()[m
+[32m+[m[32m                        .subtract([m
+[32m+[m[32m                                player.position()[m
+[32m+[m[32m                        );[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                direction.lengthSqr()[m
+[32m+[m[32m                        > 0.0001D[m
+[32m+[m[32m        ) {[m
+[32m+[m
+[32m+[m[32m            direction =[m
+[32m+[m[32m                    direction.normalize();[m
+[32m+[m
+[32m+[m[32m            double knockback =[m
+[32m+[m[32m                    multiplier == 1.0D[m
+[32m+[m[32m                            ? 0.18D[m
+[32m+[m[32m                            : 0.28D;[m
+[32m+[m
+[32m+[m[32m            target.push([m
+[32m+[m[32m                    direction.x * knockback,[m
+[32m+[m[32m                    0.08D,[m
+[32m+[m[32m                    direction.z * knockback[m
+[32m+[m[32m            );[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static void shockwave([m
+[32m+[m[32m            ServerPlayer player[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        double range =[m
+[32m+[m[32m                4.0D;[m
+[32m+[m
+[32m+[m[32m        AABB box =[m
+[32m+[m[32m                player.getBoundingBox()[m
+[32m+[m[32m                        .inflate([m
+[32m+[m[32m                                range[m
+[32m+[m[32m                        );[m
+[32m+[m
+[32m+[m[32m        for ([m
+[32m+[m[32m                LivingEntity target :[m
+[32m+[m[32m                player.level()[m
+[32m+[m[32m                        .getEntitiesOfClass([m
+[32m+[m[32m                                LivingEntity.class,[m
+[32m+[m[32m                                box,[m
+[32m+[m[32m                                entity ->[m
+[32m+[m[32m                                        entity != player[m
+[32m+[m[32m                        )[m
+[32m+[m[32m        ) {[m
+[32m+[m
+[32m+[m[32m            double damage =[m
+[32m+[m[32m                    4.0D[m
+[32m+[m[32m                            * PowerManager.getDamageMultiplier([m
+[32m+[m[32m                                    player[m
+[32m+[m[32m                            );[m
+[32m+[m
+[32m+[m[32m            target.hurt([m
+[32m+[m[32m                    player.damageSources()[m
+[32m+[m[32m                            .playerAttack([m
+[32m+[m[32m                                    player[m
+[32m+[m[32m                            ),[m
+[32m+[m[32m                    (float) damage[m
+[32m+[m[32m            );[m
+[32m+[m
+[32m+[m[32m            Vec3 direction =[m
+[32m+[m[32m                    target.position()[m
+[32m+[m[32m                            .subtract([m
+[32m+[m[32m                                    player.position()[m
+[32m+[m[32m                            );[m
+[32m+[m
+[32m+[m[32m            if ([m
+[32m+[m[32m                    direction.lengthSqr()[m
+[32m+[m[32m                            > 0.0001D[m
+[32m+[m[32m            ) {[m
+[32m+[m
+[32m+[m[32m                direction =[m
+[32m+[m[32m                        direction.normalize();[m
+[32m+[m
+[32m+[m[32m                target.push([m
+[32m+[m[32m                        direction.x * 0.35D,[m
+[32m+[m[32m                        0.16D,[m
+[32m+[m[32m                        direction.z * 0.35D[m
+[32m+[m[32m                );[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static void uppercut([m
+[32m+[m[32m            ServerPlayer player[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        LivingEntity target =[m
+[32m+[m[32m                findTarget([m
+[32m+[m[32m                        player,[m
+[32m+[m[32m                        3.0D[m
+[32m+[m[32m                );[m
+[32m+[m
+[32m+[m[32m        if ([m
+[32m+[m[32m                target == null[m
+[32m+[m[32m        ) {[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        double damage =[m
+[32m+[m[32m                6.0D[m
+[32m+[m[32m                        * PowerManager.getDamageMultiplier([m
+[32m+[m[32m                                player[m
+[32m+[m[32m                        );[m
+[32m+[m
+[32m+[m[32m        target.hurt([m
+[32m+[m[32m                player.damageSources()[m
+[32m+[m[32m                        .playerAttack([m
+[32m+[m[32m                                player[m
+[32m+[m[32m                        ),[m
+[32m+[m[32m                (float) damage[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        target.setDeltaMovement([m
+[32m+[m[32m                target.getDeltaMovement().x,[m
+[32m+[m[32m                0.45D,[m
+[32m+[m[32m                target.getDeltaMovement().z[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        target.hurtMarked = true;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private static void guard([m
+[32m+[m[32m            ServerPlayer player[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        player.addEffect([m
+[32m+[m[32m                new MobEffectInstance([m
+[32m+[m[32m                        MobEffects.DAMAGE_RESISTANCE,[m
+[32m+[m[32m                        40,[m
+[32m+[m[32m                        1,[m
+[32m+[m[32m                        false,[m
+[32m+[m[32m                        false,[m
+[32m+[m[32m                        true[m
+                 )[m
+         );[m
+     }[m
+[32m+[m
+[32m+[m[32m    private static LivingEntity findTarget([m
+[32m+[m[32m            ServerPlayer player,[m
+[32m+[m[32m            double range[m
+[32m+[m[32m    ) {[m
+[32m+[m
+[32m+[m[32m        Vec3 start =[m
+[32m+[m[32m                player.getEyePosition();[m
+[32m+[m
+[32m+[m[32m        Vec3 direction =[m
+[32m+[m[32m                player.getLookAngle()[m
+[32m+[m[32m                        .normalize();[m
+[32m+[m
+[32m+[m[32m        Vec3 end =[m
+[32m+[m[32m                start.add([m
+[32m+[m[32m                        direction.scale([m
+[32m+[m[32m                                range[m
+[32m+[m[32m                        )[m
+[32m+[m[32m                );[m
+[32m+[m
+[32m+[m[32m        AABB searchBox =[m
+[32m+[m[32m                player.getBoundingBox()[m
+[32m+[m[32m                        .expandTowards([m
+[32m+[m[32m                                direction.scale([m
+[32m+[m[32m                                        range[m
+[32m+[m[32m                                )[m
+[32m+[m[32m                        )[m
+[32m+[m[32m                        .inflate([m
+[32m+[m[32m                                0.5D[m
+[32m+[m[32m                        );[m
+[32m+[m
+[32m+[m[32m        LivingEntity closest =[m
+[32m+[m[32m                null;[m
+[32m+[m
+[32m+[m[32m        double closestDistance =[m
+[32m+[m[32m                Double.MAX_VALUE;[m
+[32m+[m
+[32m+[m[32m        for ([m
+[32m+[m[32m                LivingEntity entity :[m
+[32m+[m[32m                player.level()[m
+[32m+[m[32m                        .getEntitiesOfClass([m
+[32m+[m[32m                                LivingEntity.class,[m
+[32m+[m[32m                                searchBox,[m
+[32m+[m[32m                                candidate ->[m
+[32m+[m[32m                                        candidate != player[m
+[32m+[m[32m                        )[m
+[32m+[m[32m        ) {[m
+[32m+[m
+[32m+[m[32m            AABB entityBox =[m
+[32m+[m[32m                    entity.getBoundingBox();[m
+[32m+[m
+[32m+[m[32m            if ([m
+[32m+[m[32m                    entityBox.contains([m
+[32m+[m[32m                            start[m
+[32m+[m[32m                    )[m
+[32m+[m[32m                            || entityBox.clip([m
+[32m+[m[32m                                    start,[m
+[32m+[m[32m                                    end[m
+[32m+[m[32m                            ).isPresent()[m
+[32m+[m[32m            ) {[m
+[32m+[m
+[32m+[m[32m                double distance =[m
+[32m+[m[32m                        player.distanceToSqr([m
+[32m+[m[32m                                entity[m
+[32m+[m[32m                        );[m
+[32m+[m
+[32m+[m[32m                if ([m
+[32m+[m[32m                        distance[m
+[32m+[m[32m                                < closestDistance[m
+[32m+[m[32m                ) {[m
+[32m+[m
+[32m+[m[32m                    closestDistance =[m
+[32m+[m[32m                            distance;[m
+[32m+[m
+[32m+[m[32m                    closest =[m
+[32m+[m[32m                            entity;[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return closest;[m
+[32m+[m[32m    }[m
+ }[m
+\ No newline at end of file[m

@@ -4,10 +4,18 @@
   "workspacePanelSortAscending": true,
   "projectBrowserState": {
     "expandedPaths": [
-      "[, Kaizoku-ō craft]"
+      "[, Kaizoku-ō craft]",
+      "[, Kaizoku-ō craft, Source (Gradle)]",
+      "[, Kaizoku-ō craft, Source (Gradle), C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net]",
+      "[, Kaizoku-ō craft, Source (Gradle), C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator]",
+      "[, Kaizoku-ō craft, Source (Gradle), C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator\\kaizokuocraft]",
+      "[, Kaizoku-ō craft, Source (Gradle), C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator\\kaizokuocraft, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator\\kaizokuocraft\\client]",
+      "[, Kaizoku-ō craft, Source (Gradle), C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator\\kaizokuocraft, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator\\kaizokuocraft\\network]",
+      "[, Kaizoku-ō craft, Source (Gradle), C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator\\kaizokuocraft, C:\\MCreatorWorkspaces\\kaizoku_o_craft\\src\\main\\java\\net\\mcreator\\kaizokuocraft\\player]"
     ]
   },
   "leftDockState": {
+    "expandedDock": "project_browser",
     "dockSizes": {
       "project_browser": 280,
       "local_history": 280
@@ -17,6 +25,7 @@
     "dockSizes": {}
   },
   "bottomDockState": {
+    "expandedDock": "console",
     "dockSizes": {
       "console": 300,
       "code_viewer": 300,
