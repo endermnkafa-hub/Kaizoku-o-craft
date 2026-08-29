@@ -144,6 +144,7 @@ public final class SkillManager {
     }
 
     private static void swordSlash(ServerPlayer player, double multiplier) {
+        player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
         LivingEntity target = findTarget(player, 4.0D);
         if (target == null) {
             // Whoosh miss sound
@@ -181,6 +182,7 @@ public final class SkillManager {
     }
 
     private static void kick(ServerPlayer player, double multiplier) {
+        player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
         LivingEntity target = findTarget(player, 3.5D);
         if (target == null) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.PLAYERS, 1.0F, 1.2F);
