@@ -27,7 +27,7 @@ public final class SkillManager {
             String skillId
     ) {
 
-        if (skillId == null) {
+        if (skillId == null || skillId.isBlank()) {
             return;
         }
 
@@ -35,48 +35,47 @@ public final class SkillManager {
                 System.currentTimeMillis();
 
         long cooldown =
-                getCooldown(
-                        skillId
-                );
+                getCooldown(skillId);
 
-        if (
-                !isReady(
-                        player,
-                        skillId,
-                        now
-                )
-        ) {
+        if (!isReady(
+                player,
+                skillId,
+                now
+        )) {
             return;
         }
 
         switch (skillId) {
 
-            case "punch" ->
-                    punch(
-                            player,
-                            1.0D
-                    );
+            case "punch" -> punch(
+                    player,
+                    1.0D
+            );
 
-            case "heavy_punch" ->
-                    punch(
-                            player,
-                            1.8D
-                    );
+            case "heavy_punch" -> punch(
+                    player,
+                    1.8D
+            );
 
-            case "dash" ->
-                    dash(player);
+            case "dash" -> dash(
+                    player
+            );
 
-            case "shockwave" ->
-                    shockwave(player);
+            case "shockwave" -> shockwave(
+                    player
+            );
 
-            case "uppercut" ->
-                    uppercut(player);
+            case "uppercut" -> uppercut(
+                    player
+            );
 
-            case "guard" ->
-                    guard(player);
+            case "guard" -> guard(
+                    player
+            );
 
-            default ->
-                    return;
+            default -> {
+                return;
+            }
         }
 
         setCooldown(
@@ -126,9 +125,7 @@ public final class SkillManager {
                         player.getUUID()
                 );
 
-        if (
-                playerCooldowns == null
-        ) {
+        if (playerCooldowns == null) {
             return true;
         }
 
@@ -179,17 +176,15 @@ public final class SkillManager {
                         0.0F
                 ) * 5.0F;
 
-        if (
-                baseDamage < 1.0F
-        ) {
+        if (baseDamage < 1.0F) {
             baseDamage = 1.0F;
         }
 
         double damage =
                 baseDamage
                         * PowerManager.getDamageMultiplier(
-                        player
-                )
+                                player
+                        )
                         * multiplier;
 
         target.hurt(
@@ -243,9 +238,7 @@ public final class SkillManager {
 
         AABB box =
                 player.getBoundingBox()
-                        .inflate(
-                                range
-                        );
+                        .inflate(range);
 
         for (
                 LivingEntity target :
@@ -261,8 +254,8 @@ public final class SkillManager {
             double damage =
                     4.0D
                             * PowerManager.getDamageMultiplier(
-                            player
-                    );
+                                    player
+                            );
 
             target.hurt(
                     player.damageSources().playerAttack(
@@ -303,8 +296,8 @@ public final class SkillManager {
         double damage =
                 6.0D
                         * PowerManager.getDamageMultiplier(
-                        player
-                );
+                                player
+                        );
 
         target.hurt(
                 player.damageSources().playerAttack(
@@ -385,16 +378,14 @@ public final class SkillManager {
         ) {
 
             AABB entityBox =
-                    candidateBoundingBox(
-                            entity
-                    );
+                    entity.getBoundingBox();
 
             if (
                     entityBox.contains(start)
-                    || entityBox.clip(
-                            start,
-                            end
-                    ).isPresent()
+                            || entityBox.clip(
+                                    start,
+                                    end
+                            ).isPresent()
             ) {
 
                 double distance =
@@ -417,12 +408,5 @@ public final class SkillManager {
         }
 
         return closest;
-    }
-
-    private static AABB candidateBoundingBox(
-            LivingEntity entity
-    ) {
-
-        return entity.getBoundingBox();
     }
 }
