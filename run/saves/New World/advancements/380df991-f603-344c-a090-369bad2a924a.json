@@ -20,6 +20,7 @@
   "minecraft:adventure/kill_all_mobs": {
     "criteria": {
       "minecraft:skeleton": "2026-08-29 12:44:27 +0300",
+      "minecraft:spider": "2026-08-29 12:52:39 +0300",
       "minecraft:zombie": "2026-08-28 23:38:26 +0300"
     },
     "done": false
@@ -81,6 +82,24 @@
   "minecraft:recipes/misc/leather_horse_armor": {
     "criteria": {
       "has_leather": "2026-08-29 12:44:44 +0300"
+    },
+    "done": true
+  },
+  "minecraft:recipes/food/cooked_beef_from_smoking": {
+    "criteria": {
+      "has_beef": "2026-08-29 12:52:47 +0300"
+    },
+    "done": true
+  },
+  "minecraft:recipes/food/cooked_beef": {
+    "criteria": {
+      "has_beef": "2026-08-29 12:52:47 +0300"
+    },
+    "done": true
+  },
+  "minecraft:recipes/food/cooked_beef_from_campfire_cooking": {
+    "criteria": {
+      "has_beef": "2026-08-29 12:52:47 +0300"
     },
     "done": true
   },
