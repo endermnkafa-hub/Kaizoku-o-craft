@@ -24,7 +24,7 @@ public final class StaminaManager {
      * 118 stamina
      */
     public static final double STAMINA_PER_LEVEL =
-            2.0D;
+            30.0D;
 
     /*
      * 20 tick = 1 saniye
