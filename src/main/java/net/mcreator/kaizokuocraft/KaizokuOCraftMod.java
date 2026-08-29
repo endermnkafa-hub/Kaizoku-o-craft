@@ -116,5 +116,8 @@ public class KaizokuOCraftMod {
 		while (!workQueue.isEmpty() && currentTick >= workQueue.peek().getTick()) {
 			workQueue.poll().run();
 		}
+		StaminaManager.tickServer(
+		        event.getServer()
+		);
 	}
 }
