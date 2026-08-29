@@ -14,22 +14,48 @@ public final class DamageEvents {
     public static void onLivingIncomingDamage(
             LivingIncomingDamageEvent event
     ) {
-        if (!(event.getSource().getEntity() instanceof ServerPlayer player)) {
+
+        if (
+                !(event.getEntity()
+                        instanceof ServerPlayer player)
+        ) {
             return;
         }
 
-        float originalDamage = event.getAmount();
+        float originalDamage =
+                event.getAmount();
 
-        if (originalDamage <= 0.0F) {
+        if (
+                originalDamage <= 0.0F
+        ) {
             return;
         }
 
-        double multiplier =
-                PowerManager.getDamageMultiplier(player);
+        double durability =
+                PowerManager.getDurabilityMultiplier(
+                        player
+                );
 
+        if (
+                durability <= 0.0D
+        ) {
+            return;
+        }
+
+        /*
+         * Dayanıklılık arttıkça alınan hasar azalır.
+         */
         float finalDamage =
-                (float) (originalDamage * multiplier);
+                (float) (
+                        originalDamage
+                                / durability
+                );
 
-        event.setAmount(finalDamage);
+        event.setAmount(
+                Math.max(
+                        0.0F,
+                        finalDamage
+                )
+        );
     }
 }
