@@ -28,6 +28,7 @@ import net.mcreator.kaizokuocraft.client.CombatVanillaHud;
 import net.mcreator.kaizokuocraft.client.CombatHud;
 import net.mcreator.kaizokuocraft.client.ClientGameEventHandler;
 import net.mcreator.kaizokuocraft.client.ClientEventHandler;
+import net.mcreator.kaizokuocraft.network.SkillUsePacket;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
