@@ -19,6 +19,9 @@ public final class SkillManager {
             > COOLDOWNS =
             new HashMap<>();
 
+    private static final long DASH_UNLOCK_LEVEL =
+            10L;
+
     private SkillManager() {
     }
 
@@ -27,7 +30,23 @@ public final class SkillManager {
             String skillId
     ) {
 
-        if (skillId == null || skillId.isBlank()) {
+        if (
+                skillId == null
+                        || skillId.isBlank()
+        ) {
+            return;
+        }
+
+        /*
+         * Dash artık normal skill değil.
+         * Fakat özel hareket olarak buradan çalışıyor.
+         */
+        if (skillId.equals("dash")) {
+
+            useDash(
+                    player
+            );
+
             return;
         }
 
@@ -35,57 +54,139 @@ public final class SkillManager {
                 System.currentTimeMillis();
 
         long cooldown =
-                getCooldown(skillId);
+                getCooldown(
+                        skillId
+                );
 
-        if (!isReady(
-                player,
-                skillId,
-                now
-        )) {
+        if (
+                !isReady(
+                        player,
+                        skillId,
+                        now
+                )
+        ) {
             return;
         }
 
+        boolean success;
+
         switch (skillId) {
 
-            case "punch" -> punch(
-                    player,
-                    1.0D
-            );
+            case "punch" -> {
+                punch(
+                        player,
+                        1.0D
+                );
+                success = true;
+            }
 
-            case "heavy_punch" -> punch(
-                    player,
-                    1.8D
-            );
+            case "heavy_punch" -> {
+                punch(
+                        player,
+                        1.8D
+                );
+                success = true;
+            }
 
-            case "dash" -> dash(
-                    player
-            );
+            case "shockwave" -> {
+                shockwave(
+                        player
+                );
+                success = true;
+            }
 
-            case "shockwave" -> shockwave(
-                    player
-            );
+            case "uppercut" -> {
+                uppercut(
+                        player
+                );
+                success = true;
+            }
 
-            case "uppercut" -> uppercut(
-                    player
-            );
-
-            case "guard" -> guard(
-                    player
-            );
+            case "guard" -> {
+                guard(
+                        player
+                );
+                success = true;
+            }
 
             default -> {
                 return;
             }
         }
 
+        if (success) {
+
+            setCooldown(
+                    player,
+                    skillId,
+                    now + cooldown
+            );
+        }
+    }
+
+    public static void useDash(
+            ServerPlayer player
+    ) {
+
+        PlayerData data =
+                PlayerDataManager.get(
+                        player
+                );
+
+        /*
+         * Level 10 olmadan Dash kullanılamaz.
+         */
+        if (
+                data.getLevel()
+                        < DASH_UNLOCK_LEVEL
+        ) {
+            return;
+        }
+
+        long now =
+                System.currentTimeMillis();
+
+        if (
+                !isReady(
+                        player,
+                        "dash",
+                        now
+                )
+        ) {
+            return;
+        }
+
+        Vec3 look =
+                player.getLookAngle()
+                        .normalize();
+
+        /*
+         * Önce mevcut yatay hareketi alıyoruz.
+         */
+        Vec3 movement =
+                look.scale(
+                        1.25D
+                );
+
+        player.setDeltaMovement(
+                movement.x,
+                Math.max(
+                        0.0D,
+                        player.getDeltaMovement().y
+                ),
+                movement.z
+        );
+
+        player.hurtMarked = true;
+
         setCooldown(
                 player,
-                skillId,
-                now + cooldown
+                "dash",
+                now + getCooldown("dash")
         );
     }
 
-    private static long getCooldown(
+    public static long getCooldown(
             String skillId
     ) {
 
@@ -97,9 +198,6 @@ public final class SkillManager {
             case "heavy_punch" ->
                     1200L;
 
-            case "dash" ->
-                    1000L;
-
             case "shockwave" ->
                     1800L;
 
@@ -109,9 +207,16 @@ public final class SkillManager {
             case "guard" ->
                     3000L;
 
+            case "dash" ->
+                    1000L;
+
             default ->
                     1000L;
         };
+    }
+
+    public static long getDashUnlockLevel() {
+        return DASH_UNLOCK_LEVEL;
     }
 
     private static boolean isReady(
@@ -125,7 +230,9 @@ public final class SkillManager {
                         player.getUUID()
                 );
 
-        if (playerCooldowns == null) {
+        if (
+                playerCooldowns == null
+        ) {
             return true;
         }
 
@@ -164,10 +271,12 @@ public final class SkillManager {
         LivingEntity target =
                 findTarget(
                         player,
-                        4.0D
+                        3.5D
                 );
 
-        if (target == null) {
+        if (
+                target == null
+        ) {
             return;
         }
 
@@ -176,7 +285,9 @@ public final class SkillManager {
                         0.0F
                 ) * 5.0F;
 
-        if (baseDamage < 1.0F) {
+        if (
+                baseDamage < 1.0F
+        ) {
             baseDamage = 1.0F;
         }
 
@@ -194,51 +305,51 @@ public final class SkillManager {
                 (float) damage
         );
 
+        /*
+         * Önceden multiplier kadar knockback
+         * veriyorduk.
+         *
+         * Şimdi çok daha kontrollü.
+         */
         Vec3 direction =
                 target.position()
                         .subtract(
                                 player.position()
-                        )
-                        .normalize();
+                        );
 
-        target.push(
-                direction.x * multiplier,
-                0.15D,
-                direction.z * multiplier
-        );
-    }
+        if (
+                direction.lengthSqr()
+                        > 0.0001D
+        ) {
 
-    private static void dash(
-            ServerPlayer player
-    ) {
+            direction =
+                    direction.normalize();
 
-        Vec3 look =
-                player.getLookAngle()
-                        .normalize();
+            double knockback =
+                    multiplier == 1.0D
+                            ? 0.18D
+                            : 0.28D;
 
-        Vec3 movement =
-                look.scale(
-                        1.6D
-                );
-
-        player.setDeltaMovement(
-                movement.x,
-                0.25D,
-                movement.z
-        );
-
-        player.hurtMarked = true;
+            target.push(
+                    direction.x * knockback,
+                    0.08D,
+                    direction.z * knockback
+            );
+        }
     }
 
     private static void shockwave(
             ServerPlayer player
     ) {
 
-        double range = 4.0D;
+        double range =
+                4.0D;
 
         AABB box =
                 player.getBoundingBox()
-                        .inflate(range);
+                        .inflate(
+                                range
+                        );
 
         for (
                 LivingEntity target :
@@ -268,14 +379,26 @@ public final class SkillManager {
                     target.position()
                             .subtract(
                                     player.position()
-                            )
-                            .normalize();
+                            );
 
-            target.push(
-                    direction.x * 1.4D,
-                    0.45D,
-                    direction.z * 1.4D
-            );
+            if (
+                    direction.lengthSqr()
+                            > 0.0001D
+            ) {
+
+                direction =
+                        direction.normalize();
+
+                /*
+                 * Shockwave güçlü ama
+                 * artık kilometrelerce fırlatmaz.
+                 */
+                target.push(
+                        direction.x * 0.35D,
+                        0.16D,
+                        direction.z * 0.35D
+                );
+            }
         }
     }
 
@@ -286,10 +409,12 @@ public final class SkillManager {
         LivingEntity target =
                 findTarget(
                         player,
-                        3.5D
+                        3.0D
                 );
 
-        if (target == null) {
+        if (
+                target == null
+        ) {
             return;
         }
 
@@ -306,9 +431,12 @@ public final class SkillManager {
                 (float) damage
         );
 
+        /*
+         * Daha kontrollü yukarı savurma.
+         */
         target.setDeltaMovement(
                 target.getDeltaMovement().x,
-                1.0D,
+                0.45D,
                 target.getDeltaMovement().z
         );
 
@@ -358,10 +486,11 @@ public final class SkillManager {
                                 )
                         )
                         .inflate(
-                                1.0D
+                                0.5D
                         );
 
-        LivingEntity closest = null;
+        LivingEntity closest =
+                null;
 
         double closestDistance =
                 Double.MAX_VALUE;
@@ -381,7 +510,9 @@ public final class SkillManager {
                     entity.getBoundingBox();
 
             if (
-                    entityBox.contains(start)
+                    entityBox.contains(
+                            start
+                    )
                             || entityBox.clip(
                                     start,
                                     end
