@@ -253,16 +253,21 @@ public abstract class PlayerAnimationMixin<T extends LivingEntity> {
 	private ModelPart getModelPart(PlayerModel<T> model, String boneName) {
 		switch (boneName) {
 			case "torso" :
+			case "body" :
 				return model.body;
 			case "head" :
 				return model.head;
 			case "right_arm" :
+			case "right_lower_arm" :
 				return model.rightArm;
 			case "left_arm" :
+			case "left_lower_arm" :
 				return model.leftArm;
 			case "right_leg" :
+			case "right_lower_leg" :
 				return model.rightLeg;
 			case "left_leg" :
+			case "left_lower_leg" :
 				return model.leftLeg;
 			default :
 				return null;
