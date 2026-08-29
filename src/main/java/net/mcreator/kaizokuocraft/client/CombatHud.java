@@ -15,7 +15,7 @@ public final class CombatHud {
     private static final int SLOT_GAP = 3;
 
     private static final float ANIMATION_DISTANCE = 18.0F;
-    private static final double ANIMATION_SPEED = 0.010D;
+    private static final double ANIMATION_SPEED = 0.18D;
 
     private static boolean lastCombatState = false;
     private static double animationProgress = 0.0D;
