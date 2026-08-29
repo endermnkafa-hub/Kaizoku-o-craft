@@ -2,7 +2,6 @@ package net.mcreator.kaizokuocraft.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-
 import net.minecraft.world.item.ItemStack;
 
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,85 +24,128 @@ public final class CombatHud {
     }
 
     @SubscribeEvent
-    public static void render(RenderGuiEvent.Post event) {
+    public static void render(
+            RenderGuiEvent.Post event
+    ) {
 
-        boolean combatActive = CombatState.isActive();
+        boolean combatActive =
+                CombatState.isActive();
 
-        if (combatActive != lastCombatState) {
+        if (
+                combatActive
+                        != lastCombatState
+        ) {
 
             if (combatActive) {
-                animationProgress = 0.0D;
+                animationProgress =
+                        0.0D;
             } else {
-                animationProgress = 1.0D;
+                animationProgress =
+                        1.0D;
             }
 
-            lastCombatState = combatActive;
+            lastCombatState =
+                    combatActive;
         }
 
-        if (!combatActive && animationProgress <= 0.0D) {
+        if (
+                !combatActive
+                        && animationProgress <= 0.0D
+        ) {
             return;
         }
 
-        Minecraft minecraft = Minecraft.getInstance();
+        Minecraft minecraft =
+                Minecraft.getInstance();
 
-        if (minecraft.player == null || minecraft.screen != null) {
+        if (
+                minecraft.player == null
+                        || minecraft.screen != null
+        ) {
             return;
         }
 
-        long currentTime = System.nanoTime();
+        long currentTime =
+                System.nanoTime();
 
         double deltaSeconds =
-                (currentTime - lastFrameTime) / 1_000_000_000.0D;
+                (
+                        currentTime
+                                - lastFrameTime
+                )
+                        / 1_000_000_000.0D;
 
-        lastFrameTime = currentTime;
+        lastFrameTime =
+                currentTime;
 
         deltaSeconds =
-                Math.min(deltaSeconds, 0.05D);
+                Math.min(
+                        deltaSeconds,
+                        0.05D
+                );
 
         if (combatActive) {
+
             animationProgress +=
-                    deltaSeconds / ANIMATION_SPEED;
+                    deltaSeconds
+                            / ANIMATION_SPEED;
+
         } else {
+
             animationProgress -=
-                    deltaSeconds / ANIMATION_SPEED;
+                    deltaSeconds
+                            / ANIMATION_SPEED;
         }
 
         animationProgress =
                 Math.max(
                         0.0D,
-                        Math.min(1.0D, animationProgress)
+                        Math.min(
+                                1.0D,
+                                animationProgress
+                        )
                 );
 
         double easedProgress =
                 1.0D - Math.pow(
-                        1.0D - animationProgress,
+                        1.0D
+                                - animationProgress,
                         3.0D
                 );
 
         int animationOffset =
                 (int) (
                         ANIMATION_DISTANCE
-                                * (1.0D - easedProgress)
+                                * (
+                                1.0D
+                                        - easedProgress
+                        )
                 );
 
         GuiGraphics graphics =
                 event.getGuiGraphics();
 
         int screenWidth =
-                minecraft.getWindow().getGuiScaledWidth();
+                minecraft.getWindow()
+                        .getGuiScaledWidth();
 
         int screenHeight =
-                minecraft.getWindow().getGuiScaledHeight();
+                minecraft.getWindow()
+                        .getGuiScaledHeight();
 
         int slotCount =
                 SkillLoadout.getSlotCount();
 
         int totalWidth =
-                (SLOT_WIDTH * slotCount)
-                        + (SLOT_GAP * (slotCount - 1));
+                SLOT_WIDTH * slotCount
+                        + SLOT_GAP
+                        * (slotCount - 1);
 
         int startX =
-                (screenWidth - totalWidth) / 2;
+                (
+                        screenWidth
+                                - totalWidth
+                ) / 2;
 
         int y =
                 screenHeight
@@ -111,20 +153,27 @@ public final class CombatHud {
                         - 6
                         + animationOffset;
 
-        for (int slot = 0; slot < slotCount; slot++) {
+        for (
+                int slot = 0;
+                slot < slotCount;
+                slot++
+        ) {
 
             int x =
                     startX
-                            + (SLOT_WIDTH + SLOT_GAP) * slot;
+                            + (
+                            SLOT_WIDTH
+                                    + SLOT_GAP
+                    ) * slot;
 
             drawSkill(
                     graphics,
                     minecraft,
                     x,
                     y,
-                    SkillLoadout.getSkillName(slot),
-                    SkillLoadout.getSkillKey(slot),
-                    SkillLoadout.getSkillIcon(slot)
+                    SkillLoadout.getSkill(
+                            slot
+                    )
             );
         }
     }
@@ -134,9 +183,7 @@ public final class CombatHud {
             Minecraft minecraft,
             int x,
             int y,
-            String name,
-            String key,
-            ItemStack icon
+            SkillDefinition skill
     ) {
 
         graphics.fill(
@@ -164,6 +211,22 @@ public final class CombatHud {
                 0xFF999999
         );
 
+        if (skill == null) {
+
+            graphics.drawCenteredString(
+                    minecraft.font,
+                    "?",
+                    x + SLOT_WIDTH / 2,
+                    y + 8,
+                    0xFF666666
+            );
+
+            return;
+        }
+
+        ItemStack icon =
+                skill.icon();
+
         if (!icon.isEmpty()) {
 
             int iconX =
@@ -177,52 +240,119 @@ public final class CombatHud {
                     iconX,
                     iconY
             );
-
-        } else {
-
-            String emptyText = "?";
-
-            int textWidth =
-                    minecraft.font.width(emptyText);
-
-            graphics.drawString(
-                    minecraft.font,
-                    emptyText,
-                    x + (SLOT_WIDTH - textWidth) / 2,
-                    y + 6,
-                    0xFF666666,
-                    false
-            );
         }
 
         String displayName =
-                name.length() > 6
-                        ? name.substring(0, 6)
-                        : name;
+                skill.name().length() > 6
+                        ? skill.name().substring(
+                                0,
+                                6
+                        )
+                        : skill.name();
 
-        int nameWidth =
-                minecraft.font.width(displayName);
-
-        graphics.drawString(
+        graphics.drawCenteredString(
                 minecraft.font,
                 displayName,
-                x + (SLOT_WIDTH - nameWidth) / 2,
+                x + SLOT_WIDTH / 2,
                 y + 23,
-                0xFFFFFFFF,
-                true
+                0xFFFFFFFF
         );
 
-        int keyWidth =
-                minecraft.font.width(key);
-
-        graphics.drawString(
+        graphics.drawCenteredString(
                 minecraft.font,
-                key,
-                x + (SLOT_WIDTH - keyWidth) / 2,
+                getKeyForSkill(
+                        skill
+                ),
+                x + SLOT_WIDTH / 2,
                 y + 35,
-                0xFFFFD54A,
-                true
+                0xFFFFD54A
         );
+
+        /*
+         * COOLDOWN
+         */
+        long remaining =
+                SkillCooldownClient
+                        .getRemainingMillis(
+                                skill.id()
+                        );
+
+        if (remaining > 0L) {
+
+            double progress =
+                    SkillCooldownClient.getProgress(
+                            skill.id(),
+                            skill.cooldownMillis()
+                    );
+
+            int overlayHeight =
+                    (int) (
+                            SLOT_HEIGHT
+                                    * progress
+                    );
+
+            graphics.fill(
+                    x,
+                    y,
+                    x + SLOT_WIDTH,
+                    y + overlayHeight,
+                    0x99101010
+            );
+
+            String timeText;
+
+            if (remaining >= 1000L) {
+
+                timeText =
+                        String.format(
+                                "%.1f",
+                                remaining
+                                        / 1000.0D
+                        );
+
+            } else {
+
+                timeText =
+                        String.valueOf(
+                                remaining
+                        );
+            }
+
+            graphics.drawCenteredString(
+                    minecraft.font,
+                    timeText,
+                    x + SLOT_WIDTH / 2,
+                    y + 14,
+                    0xFFFFFFFF
+            );
+        }
+    }
+
+    private static String getKeyForSkill(
+            SkillDefinition skill
+    ) {
+
+        for (
+                int slot = 0;
+                slot < SkillLoadout.getSlotCount();
+                slot++
+        ) {
+
+            if (
+                    skill.id().equals(
+                            SkillLoadout.getSkillId(
+                                    slot
+                            )
+                    )
+            ) {
+
+                return SkillLoadout.getSkillKey(
+                        slot
+                );
+            }
+        }
+
+        return "";
     }
 
     private static void drawBorder(
