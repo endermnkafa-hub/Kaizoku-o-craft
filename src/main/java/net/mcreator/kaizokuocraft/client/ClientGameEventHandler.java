@@ -8,7 +8,30 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import org.lwjgl.glfw.GLFW;
+
 public final class ClientGameEventHandler {
+
+    private static final int[] SKILL_KEYS = {
+            GLFW.GLFW_KEY_Z,
+            GLFW.GLFW_KEY_X,
+            GLFW.GLFW_KEY_C,
+            GLFW.GLFW_KEY_V,
+            GLFW.GLFW_KEY_B,
+            GLFW.GLFW_KEY_N,
+            GLFW.GLFW_KEY_1,
+            GLFW.GLFW_KEY_2,
+            GLFW.GLFW_KEY_3
+    };
+
+    private static final int DASH_KEY =
+            GLFW.GLFW_KEY_R;
+
+    private static final boolean[] KEY_WAS_DOWN =
+            new boolean[9];
+
+    private static boolean DASH_WAS_DOWN =
+            false;
 
     private ClientGameEventHandler() {
     }
@@ -17,6 +40,15 @@ public final class ClientGameEventHandler {
     public static void onClientTick(
             ClientTickEvent.Post event
     ) {
+
+        Minecraft minecraft =
+                Minecraft.getInstance();
+
+        if (
+                minecraft.player == null
+        ) {
+            return;
+        }
 
         while (
                 CombatKeyMappings.TOGGLE_COMBAT
@@ -31,15 +63,6 @@ public final class ClientGameEventHandler {
                         .consumeClick()
         ) {
 
-            Minecraft minecraft =
-                    Minecraft.getInstance();
-
-            if (
-                    minecraft.player == null
-            ) {
-                return;
-            }
-
             if (
                     minecraft.screen == null
             ) {
@@ -53,34 +76,95 @@ public final class ClientGameEventHandler {
                             instanceof KaizokuMenuScreen
             ) {
 
-                minecraft.setScreen(null);
+                minecraft.setScreen(
+                        null
+                );
             }
         }
 
         /*
-         * Combat Mode aktif değilse
-         * skill tuşlarını kullanma.
+         * Menü açıksa combat tuşlarını
+         * kullanma.
          */
         if (
-                !CombatState.isActive()
+                minecraft.screen != null
+                        || !CombatState.isActive()
         ) {
+
+            resetKeyStates();
             return;
         }
 
+        long window =
+                minecraft.getWindow()
+                        .getWindow();
+
+        /*
+         * R = Dash
+         */
+        boolean dashDown =
+                GLFW.glfwGetKey(
+                        window,
+                        DASH_KEY
+                ) == GLFW.GLFW_PRESS;
+
+        if (
+                dashDown
+                        && !DASH_WAS_DOWN
+        ) {
+
+            long level =
+                    ClientPlayerData.getLevel();
+
+            if (
+                    level
+                            >= SkillManagerClient.getDashUnlockLevel()
+            ) {
+
+                if (
+                        !SkillCooldownClient.isOnCooldown(
+                                "dash"
+                        )
+                ) {
+
+                    PacketDistributor.sendToServer(
+                            new SkillUsePacket(
+                                    "dash"
+                            )
+                    );
+
+                    SkillCooldownClient.start(
+                            "dash",
+                            1000L
+                    );
+                }
+            }
+        }
+
+        DASH_WAS_DOWN =
+                dashDown;
+
+        /*
+         * Normal 9 skill slotu
+         */
         for (
                 int slot = 0;
-                slot < SkillLoadout.getSlotCount();
+                slot < 9;
                 slot++
         ) {
 
+            boolean down =
+                    GLFW.glfwGetKey(
+                            window,
+                            SKILL_KEYS[slot]
+                    ) == GLFW.GLFW_PRESS;
+
             /*
-             * Tuş sistemini şimdilik keyboard
-             * state üzerinden kontrol ediyoruz.
+             * Sadece tuşa yeni basıldığında çalıştır.
              */
             if (
-                    isSkillKeyPressed(
-                            slot
-                    )
+                    down
+                            && !KEY_WAS_DOWN[slot]
             ) {
 
                 String skillId =
@@ -90,75 +174,52 @@ public final class ClientGameEventHandler {
 
                 if (
                         skillId != null
+                                && !SkillCooldownClient.isOnCooldown(
+                                skillId
+                        )
                 ) {
 
-                    PacketDistributor.sendToServer(
-                            new SkillUsePacket(
+                    SkillDefinition skill =
+                            SkillRegistry.getSkill(
                                     skillId
-                            )
-                    );
+                            );
+
+                    if (
+                            skill != null
+                    ) {
+
+                        PacketDistributor.sendToServer(
+                                new SkillUsePacket(
+                                        skillId
+                                )
+                        );
+
+                        SkillCooldownClient.start(
+                                skillId,
+                                skill.cooldownMillis()
+                        );
+                    }
                 }
             }
+
+            KEY_WAS_DOWN[slot] =
+                    down;
         }
     }
 
-    private static boolean isSkillKeyPressed(
-            int slot
-    ) {
+    private static void resetKeyStates() {
 
-        String key =
-                SkillLoadout.getSkillKey(
-                        slot
-                );
+        for (
+                int i = 0;
+                i < KEY_WAS_DOWN.length;
+                i++
+        ) {
 
-        Minecraft minecraft =
-                Minecraft.getInstance();
-
-        long window =
-                minecraft.getWindow()
-                        .getWindow();
-
-        int keyCode =
-                switch (key) {
-
-                    case "Z" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_Z;
-
-                    case "X" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_X;
-
-                    case "C" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_C;
-
-                    case "V" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_V;
-
-                    case "B" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_B;
-
-                    case "N" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_N;
-
-                    case "1" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_1;
-
-                    case "2" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_2;
-
-                    case "3" ->
-                            org.lwjgl.glfw.GLFW.GLFW_KEY_3;
-
-                    default ->
-                            -1;
-                };
-
-        if (keyCode == -1) {
-            return false;
+            KEY_WAS_DOWN[i] =
+                    false;
         }
 
-        return org.lwjgl.glfw.GLFW.glfwGetKey(
-                window,
-                keyCode
-        ) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+        DASH_WAS_DOWN =
+                false;
     }
 }
