@@ -10,11 +10,11 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public final class CombatHud {
 
-    private static final int SLOT_WIDTH = 64;
-    private static final int SLOT_HEIGHT = 72;
-    private static final int SLOT_GAP = 5;
+    private static final int SLOT_WIDTH = 44;
+    private static final int SLOT_HEIGHT = 58;
+    private static final int SLOT_GAP = 4;
 
-    private static final int ICON_SIZE = 32;
+    private static final int ICON_SIZE = 20;
 
     private CombatHud() {
     }
@@ -40,19 +40,18 @@ public final class CombatHud {
         int screenHeight =
                 minecraft.getWindow().getGuiScaledHeight();
 
+        final int slotCount = 9;
+
         int totalWidth =
-                (SLOT_WIDTH * 3) + (SLOT_GAP * 2);
+                (SLOT_WIDTH * slotCount)
+                        + (SLOT_GAP * (slotCount - 1));
 
         int startX =
                 (screenWidth - totalWidth) / 2;
 
         int y =
-                screenHeight - SLOT_HEIGHT - 12;
+                screenHeight - SLOT_HEIGHT - 8;
 
-        /*
-         * İlk slot:
-         * Punch
-         */
         drawSkill(
                 graphics,
                 minecraft,
@@ -63,24 +62,16 @@ public final class CombatHud {
                 new ItemStack(Items.LEATHER)
         );
 
-        /*
-         * İkinci slot:
-         * Şimdilik boş
-         */
         drawSkill(
                 graphics,
                 minecraft,
-                startX + SLOT_WIDTH + SLOT_GAP,
+                startX + (SLOT_WIDTH + SLOT_GAP),
                 y,
                 "Empty",
                 "X",
                 ItemStack.EMPTY
         );
 
-        /*
-         * Üçüncü slot:
-         * Şimdilik boş
-         */
         drawSkill(
                 graphics,
                 minecraft,
@@ -88,6 +79,66 @@ public final class CombatHud {
                 y,
                 "Empty",
                 "C",
+                ItemStack.EMPTY
+        );
+
+        drawSkill(
+                graphics,
+                minecraft,
+                startX + (SLOT_WIDTH + SLOT_GAP) * 3,
+                y,
+                "Empty",
+                "V",
+                ItemStack.EMPTY
+        );
+
+        drawSkill(
+                graphics,
+                minecraft,
+                startX + (SLOT_WIDTH + SLOT_GAP) * 4,
+                y,
+                "Empty",
+                "B",
+                ItemStack.EMPTY
+        );
+
+        drawSkill(
+                graphics,
+                minecraft,
+                startX + (SLOT_WIDTH + SLOT_GAP) * 5,
+                y,
+                "Empty",
+                "N",
+                ItemStack.EMPTY
+        );
+
+        drawSkill(
+                graphics,
+                minecraft,
+                startX + (SLOT_WIDTH + SLOT_GAP) * 6,
+                y,
+                "Empty",
+                "1",
+                ItemStack.EMPTY
+        );
+
+        drawSkill(
+                graphics,
+                minecraft,
+                startX + (SLOT_WIDTH + SLOT_GAP) * 7,
+                y,
+                "Empty",
+                "2",
+                ItemStack.EMPTY
+        );
+
+        drawSkill(
+                graphics,
+                minecraft,
+                startX + (SLOT_WIDTH + SLOT_GAP) * 8,
+                y,
+                "Empty",
+                "3",
                 ItemStack.EMPTY
         );
     }
@@ -102,9 +153,7 @@ public final class CombatHud {
             ItemStack icon
     ) {
 
-        /*
-         * Slot gölgesi
-         */
+        // Gölge
         graphics.fill(
                 x + 2,
                 y + 2,
@@ -113,64 +162,26 @@ public final class CombatHud {
                 0x90000000
         );
 
-        /*
-         * Slot arka planı
-         */
+        // Ana arka plan
         graphics.fill(
                 x,
                 y,
                 x + SLOT_WIDTH,
                 y + SLOT_HEIGHT,
-                0xD0161616
+                0xD0181818
         );
 
-        /*
-         * Üst kenar
-         */
-        graphics.fill(
+        // Kenarlık
+        drawBorder(
+                graphics,
                 x,
                 y,
-                x + SLOT_WIDTH,
-                y + 2,
-                0xFFFFFFFF
+                SLOT_WIDTH,
+                SLOT_HEIGHT,
+                0xFFAAAAAA
         );
 
-        /*
-         * Alt kenar
-         */
-        graphics.fill(
-                x,
-                y + SLOT_HEIGHT - 2,
-                x + SLOT_WIDTH,
-                y + SLOT_HEIGHT,
-                0xFF555555
-        );
-
-        /*
-         * Sol kenar
-         */
-        graphics.fill(
-                x,
-                y,
-                x + 2,
-                y + SLOT_HEIGHT,
-                0xFFFFFFFF
-        );
-
-        /*
-         * Sağ kenar
-         */
-        graphics.fill(
-                x + SLOT_WIDTH - 2,
-                y,
-                x + SLOT_WIDTH,
-                y + SLOT_HEIGHT,
-                0xFF555555
-        );
-
-        /*
-         * Skill icon alanı
-         */
+        // İkon kutusu
         int iconX =
                 x + (SLOT_WIDTH - ICON_SIZE) / 2;
 
@@ -178,27 +189,30 @@ public final class CombatHud {
                 y + 5;
 
         graphics.fill(
-                iconX - 3,
-                iconY - 3,
-                iconX + ICON_SIZE + 3,
-                iconY + ICON_SIZE + 3,
-                0xFF242424
+                iconX - 2,
+                iconY - 2,
+                iconX + ICON_SIZE + 2,
+                iconY + ICON_SIZE + 2,
+                0xFF252525
         );
 
-        /*
-         * Gerçek item iconunu çiz.
-         */
+        // İkon
         if (!icon.isEmpty()) {
+
+            int renderedIconX =
+                    x + (SLOT_WIDTH - 16) / 2;
+
+            int renderedIconY =
+                    iconY + 2;
+
             graphics.renderItem(
                     icon,
-                    iconX,
-                    iconY
+                    renderedIconX,
+                    renderedIconY
             );
+
         } else {
 
-            /*
-             * Boş skill için ? göster.
-             */
             String emptyText = "?";
 
             int emptyWidth =
@@ -207,41 +221,87 @@ public final class CombatHud {
             graphics.drawString(
                     minecraft.font,
                     emptyText,
-                    iconX + (ICON_SIZE - emptyWidth) / 2,
-                    iconY + 9,
-                    0xFF777777,
+                    x + (SLOT_WIDTH - emptyWidth) / 2,
+                    iconY + 5,
+                    0xFF666666,
                     false
             );
         }
 
-        /*
-         * Skill adı
-         */
+        // Skill adı
+        String displayName =
+                name.length() > 9
+                        ? name.substring(0, 9)
+                        : name;
+
         int nameWidth =
-                minecraft.font.width(name);
+                minecraft.font.width(displayName);
 
         graphics.drawString(
                 minecraft.font,
-                name,
+                displayName,
                 x + (SLOT_WIDTH - nameWidth) / 2,
-                y + 43,
+                y + 32,
                 0xFFFFFFFF,
                 true
         );
 
-        /*
-         * Kullanım tuşu
-         */
+        // Tuş
+        String keyText =
+                "[" + key + "]";
+
         int keyWidth =
-                minecraft.font.width("[" + key + "]");
+                minecraft.font.width(keyText);
 
         graphics.drawString(
                 minecraft.font,
-                "[" + key + "]",
+                keyText,
                 x + (SLOT_WIDTH - keyWidth) / 2,
-                y + 57,
+                y + 45,
                 0xFFFFD54A,
                 true
+        );
+    }
+
+    private static void drawBorder(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            int width,
+            int height,
+            int color
+    ) {
+
+        graphics.fill(
+                x,
+                y,
+                x + width,
+                y + 1,
+                color
+        );
+
+        graphics.fill(
+                x,
+                y + height - 1,
+                x + width,
+                y + height,
+                color
+        );
+
+        graphics.fill(
+                x,
+                y,
+                x + 1,
+                y + height,
+                color
+        );
+
+        graphics.fill(
+                x + width - 1,
+                y,
+                x + width,
+                y + height,
+                color
         );
     }
 }
