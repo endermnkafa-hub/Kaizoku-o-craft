@@ -9,10 +9,10 @@ import net.minecraft.world.item.Items;
 
 public class KaizokuMenuScreen extends Screen {
 
-    private static final int PANEL_WIDTH = 620;
-    private static final int PANEL_HEIGHT = 380;
+    private static final int PANEL_WIDTH = 500;
+    private static final int PANEL_HEIGHT = 300;
 
-    private static final int SIDE_WIDTH = 120;
+    private static final int SIDE_WIDTH = 90;
 
     private enum Tab {
         SKILLS,
@@ -38,11 +38,7 @@ public class KaizokuMenuScreen extends Screen {
         int panelTop =
                 (this.height - PANEL_HEIGHT) / 2;
 
-        /*
-         * SOL MENÜ
-         *
-         * SKILLS
-         */
+        // SKILLER
         addRenderableWidget(
                 Button.builder(
                         Component.literal("SKİLLER"),
@@ -51,16 +47,14 @@ public class KaizokuMenuScreen extends Screen {
                             rebuild();
                         }
                 ).bounds(
-                        panelLeft + 12,
-                        panelTop + 45,
-                        SIDE_WIDTH - 24,
-                        32
+                        panelLeft + 8,
+                        panelTop + 48,
+                        SIDE_WIDTH - 16,
+                        28
                 ).build()
         );
 
-        /*
-         * STATS
-         */
+        // STATLAR
         addRenderableWidget(
                 Button.builder(
                         Component.literal("STATLAR"),
@@ -69,16 +63,13 @@ public class KaizokuMenuScreen extends Screen {
                             rebuild();
                         }
                 ).bounds(
-                        panelLeft + 12,
-                        panelTop + 85,
-                        SIDE_WIDTH - 24,
-                        32
+                        panelLeft + 8,
+                        panelTop + 82,
+                        SIDE_WIDTH - 16,
+                        28
                 ).build()
         );
 
-        /*
-         * SKILL SAYFASI
-         */
         if (currentTab == Tab.SKILLS) {
             createSkillPage(
                     panelLeft,
@@ -98,20 +89,16 @@ public class KaizokuMenuScreen extends Screen {
     ) {
 
         int contentLeft =
-                panelLeft + SIDE_WIDTH + 12;
+                panelLeft + SIDE_WIDTH + 18;
 
         int contentTop =
-                panelTop + 45;
+                panelTop + 48;
 
-        int slotWidth = 105;
-        int slotHeight = 85;
-        int gap = 8;
+        int slotWidth = 112;
+        int slotHeight = 40;
+        int gap = 6;
 
-        /*
-         * 9 skill slotu.
-         *
-         * 3 x 3 düzen.
-         */
+        // 9 slot - 3x3
         for (int slot = 0; slot < 9; slot++) {
 
             final int slotIndex = slot;
@@ -130,15 +117,15 @@ public class KaizokuMenuScreen extends Screen {
                     contentTop
                             + row * (slotHeight + gap);
 
+            boolean selected =
+                    selectedSlot == slotIndex;
+
             String skillName =
                     SkillLoadout.getSkillName(
                             slotIndex
                     );
 
-            boolean selected =
-                    selectedSlot == slotIndex;
-
-            String buttonText =
+            String text =
                     (selected ? "> " : "")
                             + (slotIndex + 1)
                             + "  "
@@ -146,7 +133,7 @@ public class KaizokuMenuScreen extends Screen {
 
             addRenderableWidget(
                     Button.builder(
-                            Component.literal(buttonText),
+                            Component.literal(text),
                             button -> {
 
                                 selectedSlot =
@@ -167,14 +154,10 @@ public class KaizokuMenuScreen extends Screen {
             );
         }
 
-        /*
-         * PUNCH EKLE
-         */
+        // Punch ata
         addRenderableWidget(
                 Button.builder(
-                        Component.literal(
-                                "Punch ekle"
-                        ),
+                        Component.literal("Punch"),
                         button -> {
 
                             SkillLoadout.setSkill(
@@ -189,20 +172,16 @@ public class KaizokuMenuScreen extends Screen {
                         }
                 ).bounds(
                         contentLeft,
-                        panelTop + 325,
-                        130,
-                        30
+                        panelTop + 258,
+                        100,
+                        28
                 ).build()
         );
 
-        /*
-         * SLOTU TEMİZLE
-         */
+        // Temizle
         addRenderableWidget(
                 Button.builder(
-                        Component.literal(
-                                "Slotu temizle"
-                        ),
+                        Component.literal("Temizle"),
                         button -> {
 
                             SkillLoadout.clearSlot(
@@ -212,10 +191,10 @@ public class KaizokuMenuScreen extends Screen {
                             rebuild();
                         }
                 ).bounds(
-                        contentLeft + 140,
-                        panelTop + 325,
-                        130,
-                        30
+                        contentLeft + 106,
+                        panelTop + 258,
+                        100,
+                        28
                 ).build()
         );
     }
@@ -228,12 +207,8 @@ public class KaizokuMenuScreen extends Screen {
             float partialTick
     ) {
 
-        /*
-         * Normal Minecraft arka planı + hafif karartma.
-         */
-        this.renderTransparentBackground(
-                graphics
-        );
+        // Arka planı hafif karart
+        renderTransparentBackground(graphics);
 
         int panelLeft =
                 (this.width - PANEL_WIDTH) / 2;
@@ -241,9 +216,7 @@ public class KaizokuMenuScreen extends Screen {
         int panelTop =
                 (this.height - PANEL_HEIGHT) / 2;
 
-        /*
-         * Ana panel gövdesi.
-         */
+        // Ana panel
         graphics.fill(
                 panelLeft,
                 panelTop,
@@ -252,107 +225,87 @@ public class KaizokuMenuScreen extends Screen {
                 0xF0141414
         );
 
-        /*
-         * Ana panel kenarlığı.
-         */
+        // Sol panel
+        graphics.fill(
+                panelLeft,
+                panelTop,
+                panelLeft + SIDE_WIDTH,
+                panelTop + PANEL_HEIGHT,
+                0xFF0D0D0D
+        );
+
+        // Dış kenarlık
         drawBorder(
                 graphics,
                 panelLeft,
                 panelTop,
                 PANEL_WIDTH,
                 PANEL_HEIGHT,
-                0xFF777777
+                0xFF666666
         );
 
-        /*
-         * Sol panel.
-         */
+        // Ayırıcı çizgi
         graphics.fill(
-                panelLeft,
-                panelTop,
                 panelLeft + SIDE_WIDTH,
+                panelTop,
+                panelLeft + SIDE_WIDTH + 1,
                 panelTop + PANEL_HEIGHT,
-                0xFF0E0E0E
+                0xFF555555
         );
 
-        /*
-         * Başlık.
-         */
+        // Başlık
         graphics.drawCenteredString(
                 this.font,
-                "KAIZOKU-Ō CRAFT",
-                panelLeft + PANEL_WIDTH / 2,
+                "KAIzoku-Ō CRAFT",
+                this.width / 2,
                 panelTop + 14,
                 0xFFFFFFFF
         );
 
-        /*
-         * Sol menü başlığı.
-         */
-        graphics.drawString(
-                this.font,
-                "MENÜ",
-                panelLeft + 30,
-                panelTop + 25,
-                0xFFAAAAAA
-        );
-
-        /*
-         * Skills sayfası.
-         */
+        // Aktif sayfa
         if (currentTab == Tab.SKILLS) {
 
             graphics.drawString(
                     this.font,
                     "SKİLLER",
                     panelLeft + SIDE_WIDTH + 18,
-                    panelTop + 38,
+                    panelTop + 32,
                     0xFFFFD54A
             );
 
             graphics.drawString(
                     this.font,
-                    "Combat Bar'ındaki skillleri düzenle.",
-                    panelLeft + SIDE_WIDTH + 18,
-                    panelTop + 25,
-                    0xFFAAAAAA
+                    "Combat Bar",
+                    panelLeft + SIDE_WIDTH + 72,
+                    panelTop + 32,
+                    0xFF888888
             );
 
-            drawSelectedSkillInfo(
+        } else {
+
+            graphics.drawString(
+                    this.font,
+                    "STATLAR",
+                    panelLeft + SIDE_WIDTH + 18,
+                    panelTop + 32,
+                    0xFFFFD54A
+            );
+
+            graphics.drawString(
+                    this.font,
+                    "Karakter",
+                    panelLeft + SIDE_WIDTH + 72,
+                    panelTop + 32,
+                    0xFF888888
+            );
+
+            renderStats(
                     graphics,
                     panelLeft,
                     panelTop
             );
         }
 
-        /*
-         * Stats sayfası.
-         *
-         * Şimdilik sadece yer tutucu.
-         * Daha sonra gerçek stat sistemi gelecek.
-         */
-        if (currentTab == Tab.STATS) {
-
-            graphics.drawString(
-                    this.font,
-                    "STATLAR",
-                    panelLeft + SIDE_WIDTH + 18,
-                    panelTop + 38,
-                    0xFFFFD54A
-            );
-
-            graphics.drawString(
-                    this.font,
-                    "Karakter istatistikleri burada olacak.",
-                    panelLeft + SIDE_WIDTH + 18,
-                    panelTop + 70,
-                    0xFFFFFFFF
-            );
-        }
-
-        /*
-         * Butonları çiz.
-         */
         super.render(
                 graphics,
                 mouseX,
@@ -361,47 +314,45 @@ public class KaizokuMenuScreen extends Screen {
         );
     }
 
-    private void drawSelectedSkillInfo(
+    private void renderStats(
             GuiGraphics graphics,
             int panelLeft,
             int panelTop
     ) {
 
-        int x =
-                panelLeft + SIDE_WIDTH + 370;
+        long level =
+                ClientPlayerData.getLevel();
 
-        int y =
-                panelTop + 325;
+        long experience =
+                ClientPlayerData.getExperience();
 
-        String skillName =
-                SkillLoadout.getSkillName(
-                        selectedSlot
-                );
-
-        String key =
-                SkillLoadout.getSkillKey(
-                        selectedSlot
-                );
+        String race =
+                ClientPlayerData
+                        .getRace()
+                        .getDisplayName();
 
         graphics.drawString(
                 this.font,
-                "Seçili: "
-                        + (selectedSlot + 1)
-                        + ". slot",
-                x,
-                y,
+                "Level: " + level,
+                panelLeft + SIDE_WIDTH + 20,
+                panelTop + 65,
                 0xFFFFFFFF
         );
 
         graphics.drawString(
                 this.font,
-                skillName
-                        + "  ["
-                        + key
-                        + "]",
-                x,
-                y + 16,
-                0xFFFFD54A
+                "XP: " + experience,
+                panelLeft + SIDE_WIDTH + 20,
+                panelTop + 85,
+                0xFFFFFFFF
+        );
+
+        graphics.drawString(
+                this.font,
+                "Race: " + race,
+                panelLeft + SIDE_WIDTH + 20,
+                panelTop + 105,
+                0xFFFFFFFF
         );
     }
 
@@ -418,13 +369,13 @@ public class KaizokuMenuScreen extends Screen {
                 x,
                 y,
                 x + width,
-                y + 2,
+                y + 1,
                 color
         );
 
         graphics.fill(
                 x,
-                y + height - 2,
+                y + height - 1,
                 x + width,
                 y + height,
                 color
@@ -433,13 +384,13 @@ public class KaizokuMenuScreen extends Screen {
         graphics.fill(
                 x,
                 y,
-                x + 2,
+                x + 1,
                 y + height,
                 color
         );
 
         graphics.fill(
-                x + width - 2,
+                x + width - 1,
                 y,
                 x + width,
                 y + height,
