@@ -165,10 +165,10 @@ public final class CombatHud {
          * satırının üstüne taşıyoruz.
          */
         int y =
-                screenHeight
-                        - SLOT_HEIGHT
-                        - 48
-                        + animationOffset;
+		        screenHeight
+		                - SLOT_HEIGHT
+		                - 6
+		                + animationOffset;
 
         /*
          * SKILL SLOTLARI
