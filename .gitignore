@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# MCreator
+.mcreator/workspaceBackups/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Java
+*.class
+
+# Minecraft runtime
+run/logs/
+run/crash-reports/
+run/saves/
+run/resourcepacks/
+run/server-resource-packs/
+run/user_jvm_args.txt
+run/options.txt
+
+# Temporary
+*.tmp
+*.log
