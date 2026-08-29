@@ -1,4 +1,10 @@
 package net.mcreator.kaizokuocraft.client;
 
-public class SkillDefinition {
+import net.minecraft.world.item.ItemStack;
+
+public record SkillDefinition(
+        String id,
+        String name,
+        ItemStack icon
+) {
 }
