@@ -25,6 +25,7 @@ import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.client.CombatVanillaHud;
 import net.mcreator.kaizokuocraft.client.CombatHud;
+import net.mcreator.kaizokuocraft.client.ClientEventHandler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
