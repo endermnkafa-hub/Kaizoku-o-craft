@@ -10,16 +10,50 @@ public final class CombatVanillaHud {
     }
 
     @SubscribeEvent
-    public static void hideVanillaHotbar(
+    public static void hideVanillaHud(
             RenderGuiLayerEvent.Pre event
     ) {
 
-        if (!CombatState.isActive()) {
+        if (
+                !CombatState.isActive()
+        ) {
             return;
         }
 
-        if (event.getName().equals(VanillaGuiLayers.HOTBAR)) {
-            event.setCanceled(true);
+        /*
+         * Vanilla hotbar yok.
+         */
+        if (
+                event.getName()
+                        .equals(
+                                VanillaGuiLayers.HOTBAR
+                        )
+        ) {
+
+            event.setCanceled(
+                    true
+            );
+
+            return;
         }
+
+        /*
+         * Vanilla XP bar yok.
+         */
+        if (
+                event.getName()
+                        .equals(
+                                VanillaGuiLayers.EXPERIENCE_BAR
+                        )
+        ) {
+
+            event.setCanceled(
+                    true
+            );
+        }
+
+        /*
+         * HEALTH ve FOOD'A DOKUNMUYORUZ.
+         */
     }
 }
