@@ -107,14 +107,46 @@ public class KaizokuOCraftMod {
 	}
 
 	@SubscribeEvent
-	public void tick(ServerTickEvent.Post event) {
-		int currentTick = event.getServer().getTickCount();
-		IntObjectPair<Runnable> work;
-		while ((work = workToBeScheduled.poll()) != null) {
-			workQueue.add(new TickTask(currentTick + work.leftInt(), work.right()));
-		}
-		while (!workQueue.isEmpty() && currentTick >= workQueue.peek().getTick()) {
-			workQueue.poll().run();
-		}
+	public void tick(
+	        ServerTickEvent.Post event
+	) {
+	
+	    int currentTick =
+	            event.getServer()
+	                    .getTickCount();
+	
+	    IntObjectPair<Runnable> work;
+	
+	    while (
+	            (work =
+	                    workToBeScheduled.poll())
+	                    != null
+	    ) {
+	
+	        workQueue.add(
+	                new TickTask(
+	                        currentTick
+	                                + work.leftInt(),
+	                        work.right()
+	                )
+	        );
+	    }
+	
+	    while (
+	            !workQueue.isEmpty()
+	                    && currentTick
+	                    >= workQueue.peek()
+	                    .getTick()
+	    ) {
+	
+	        workQueue.poll().run();
+	    }
+	
+	    /*
+	     * STAMINA
+	     */
+	    StaminaManager.tickServer(
+	            event.getServer()
+	    );
 	}
 }
