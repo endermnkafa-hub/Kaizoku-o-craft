@@ -12,27 +12,36 @@ public final class StaminaManager {
     /*
      * Level 1:
      * 100 stamina
+     *
+     * Her level:
+     * +30 max stamina
+     *
+     * Level 10:
+     * 370 stamina
      */
     public static final double BASE_MAX_STAMINA =
             100.0D;
 
-    /*
-     * Her level:
-     * +2 max stamina
-     *
-     * Level 10:
-     * 118 stamina
-     */
     public static final double STAMINA_PER_LEVEL =
             30.0D;
 
     /*
-     * 20 tick = 1 saniye
+     * STAMİNANIN 0 -> FULL OLMASI:
      *
-     * 0.35 x 20 = 7 stamina / saniye
+     * 2 dakika = 120 saniye
+     * 20 tick = 1 saniye
+     * 120 x 20 = 2400 tick
+     *
+     * Dolayısıyla:
+     *
+     * regen / tick =
+     * max stamina / 2400
+     *
+     * Böylece level ne olursa olsun
+     * 0'dan full'e tam 2 dakika sürer.
      */
-    public static final double REGEN_PER_TICK =
-            0.35D;
+    private static final double FULL_REGEN_TICKS =
+            120.0D * 20.0D;
 
     /*
      * Client'a her 5 tickte bir sync.
@@ -65,8 +74,7 @@ public final class StaminaManager {
     }
 
     /*
-     * Oyuncunun max stamina'sını
-     * level'a göre günceller.
+     * Level'a göre max stamina.
      */
     public static void updateMaxStamina(
             ServerPlayer player
@@ -89,9 +97,6 @@ public final class StaminaManager {
 
     /*
      * Stamina harca.
-     *
-     * true  = başarılı
-     * false = stamina yetmedi
      */
     public static boolean consume(
             ServerPlayer player,
@@ -110,10 +115,6 @@ public final class StaminaManager {
                         player
                 );
 
-        /*
-         * Her kullanımda level'a göre
-         * max değeri garanti et.
-         */
         updateMaxStamina(
                 player
         );
@@ -124,8 +125,8 @@ public final class StaminaManager {
         ) {
 
             /*
-             * Client eski değer gösteriyor
-             * olabilir. Gerçeği tekrar gönder.
+             * Client tarafında eski değer varsa
+             * server gerçeğini tekrar gönder.
              */
             sync(
                     player
@@ -139,9 +140,6 @@ public final class StaminaManager {
                         - amount
         );
 
-        /*
-         * Kullanım sonrası anında sync.
-         */
         sync(
                 player
         );
@@ -150,7 +148,19 @@ public final class StaminaManager {
     }
 
     /*
-     * Regen.
+     * REGEN
+     *
+     * Her oyuncunun max stamina'sına göre
+     * dinamik hesaplanır.
+     *
+     * Level 1:
+     * 100 / 2400 = 0.041666... / tick
+     *
+     * Level 10:
+     * 370 / 2400 = 0.154166... / tick
+     *
+     * İkisinde de:
+     * 0 -> full = 120 saniye
      */
     public static void regenerate(
             ServerPlayer player
@@ -165,15 +175,51 @@ public final class StaminaManager {
                 player
         );
 
+        double current =
+                data.getStamina();
+
+        double max =
+                data.getMaxStamina();
+
         if (
-                data.getStamina()
-                        < data.getMaxStamina()
+                current >= max
         ) {
 
-            data.addStamina(
-                    REGEN_PER_TICK
-            );
+            /*
+             * Full ise hiçbir şey yapma.
+             */
+            if (
+                    current > max
+            ) {
+
+                data.setStamina(
+                        max
+                );
+            }
+
+            return;
         }
+
+        /*
+         * 0 -> full tam 2400 tick.
+         */
+        double regenPerTick =
+                max
+                        / FULL_REGEN_TICKS;
+
+        /*
+         * Full'e yaklaşırken taşmayı önle.
+         */
+        double newStamina =
+                Math.min(
+                        max,
+                        current
+                                + regenPerTick
+                );
+
+        data.setStamina(
+                newStamina
+        );
     }
 
     /*
@@ -197,7 +243,7 @@ public final class StaminaManager {
             );
 
             /*
-             * Client sync
+             * Client sync.
              */
             if (
                     tick % SYNC_INTERVAL
