@@ -21,7 +21,7 @@ public final class CombatVanillaHud {
         }
 
         /*
-         * Vanilla hotbar yok.
+         * Vanilla hotbarı gizle.
          */
         if (
                 event.getName()
@@ -38,7 +38,7 @@ public final class CombatVanillaHud {
         }
 
         /*
-         * Vanilla XP bar yok.
+         * Vanilla XP barı gizle.
          */
         if (
                 event.getName()
@@ -50,10 +50,14 @@ public final class CombatVanillaHud {
             event.setCanceled(
                     true
             );
+
+            return;
         }
 
         /*
-         * HEALTH ve FOOD'A DOKUNMUYORUZ.
+         * HEALTH → BIRAK
+         * FOOD   → BIRAK
+         * ARMOR  → BIRAK
          */
     }
 }
