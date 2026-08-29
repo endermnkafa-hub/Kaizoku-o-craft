@@ -2,8 +2,8 @@ package net.mcreator.kaizokuocraft.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
@@ -29,10 +29,6 @@ public final class CombatHud {
 
         boolean combatActive = CombatState.isActive();
 
-        /*
-         * Combat Mode açıldı/kapatıldıysa animasyonu
-         * başlangıç durumuna getir.
-         */
         if (combatActive != lastCombatState) {
 
             if (combatActive) {
@@ -44,10 +40,6 @@ public final class CombatHud {
             lastCombatState = combatActive;
         }
 
-        /*
-         * Combat kapalı ve kapanma animasyonu tamamlandıysa
-         * hiçbir şey çizme.
-         */
         if (!combatActive && animationProgress <= 0.0D) {
             return;
         }
@@ -58,10 +50,6 @@ public final class CombatHud {
             return;
         }
 
-        /*
-         * Geçen gerçek zamanı hesapla.
-         * Böylece animasyon FPS'e bağlı olmaz.
-         */
         long currentTime = System.nanoTime();
 
         double deltaSeconds =
@@ -69,20 +57,13 @@ public final class CombatHud {
 
         lastFrameTime = currentTime;
 
-        /*
-         * Çok büyük frame aralıklarında animasyonun
-         * fırlamasını engelle.
-         */
         deltaSeconds =
                 Math.min(deltaSeconds, 0.05D);
 
         if (combatActive) {
-
             animationProgress +=
                     deltaSeconds / ANIMATION_SPEED;
-
         } else {
-
             animationProgress -=
                     deltaSeconds / ANIMATION_SPEED;
         }
@@ -93,24 +74,12 @@ public final class CombatHud {
                         Math.min(1.0D, animationProgress)
                 );
 
-        /*
-         * Smooth easing.
-         *
-         * Başlangıçta hızlı,
-         * sona yaklaşırken yavaşlar.
-         */
         double easedProgress =
                 1.0D - Math.pow(
                         1.0D - animationProgress,
                         3.0D
                 );
 
-        /*
-         * Skill bar aşağıdan başlayıp yukarı çıkar.
-         *
-         * Combat açık:
-         * 18 px aşağı → normal konum
-         */
         int animationOffset =
                 (int) (
                         ANIMATION_DISTANCE
@@ -126,7 +95,8 @@ public final class CombatHud {
         int screenHeight =
                 minecraft.getWindow().getGuiScaledHeight();
 
-        int slotCount = 9;
+        int slotCount =
+                SkillLoadout.getSlotCount();
 
         int totalWidth =
                 (SLOT_WIDTH * slotCount)
@@ -141,122 +111,22 @@ public final class CombatHud {
                         - 6
                         + animationOffset;
 
-        /*
-         * 1 — Punch
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX,
-                y,
-                "Punch",
-                "Z",
-                new ItemStack(Items.LEATHER)
-        );
+        for (int slot = 0; slot < slotCount; slot++) {
 
-        /*
-         * 2 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP),
-                y,
-                "Empty",
-                "X",
-                ItemStack.EMPTY
-        );
+            int x =
+                    startX
+                            + (SLOT_WIDTH + SLOT_GAP) * slot;
 
-        /*
-         * 3 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 2,
-                y,
-                "Empty",
-                "C",
-                ItemStack.EMPTY
-        );
-
-        /*
-         * 4 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 3,
-                y,
-                "Empty",
-                "V",
-                ItemStack.EMPTY
-        );
-
-        /*
-         * 5 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 4,
-                y,
-                "Empty",
-                "B",
-                ItemStack.EMPTY
-        );
-
-        /*
-         * 6 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 5,
-                y,
-                "Empty",
-                "N",
-                ItemStack.EMPTY
-        );
-
-        /*
-         * 7 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 6,
-                y,
-                "Empty",
-                "1",
-                ItemStack.EMPTY
-        );
-
-        /*
-         * 8 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 7,
-                y,
-                "Empty",
-                "2",
-                ItemStack.EMPTY
-        );
-
-        /*
-         * 9 — Empty
-         */
-        drawSkill(
-                graphics,
-                minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 8,
-                y,
-                "Empty",
-                "3",
-                ItemStack.EMPTY
-        );
+            drawSkill(
+                    graphics,
+                    minecraft,
+                    x,
+                    y,
+                    SkillLoadout.getSkillName(slot),
+                    SkillLoadout.getSkillKey(slot),
+                    SkillLoadout.getSkillIcon(slot)
+            );
+        }
     }
 
     private static void drawSkill(
@@ -269,9 +139,6 @@ public final class CombatHud {
             ItemStack icon
     ) {
 
-        /*
-         * Hafif gölge
-         */
         graphics.fill(
                 x + 1,
                 y + 1,
@@ -280,9 +147,6 @@ public final class CombatHud {
                 0x80000000
         );
 
-        /*
-         * Arka plan
-         */
         graphics.fill(
                 x,
                 y,
@@ -291,9 +155,6 @@ public final class CombatHud {
                 0xD0181818
         );
 
-        /*
-         * Kenarlık
-         */
         drawBorder(
                 graphics,
                 x,
@@ -303,9 +164,6 @@ public final class CombatHud {
                 0xFF999999
         );
 
-        /*
-         * İkon
-         */
         if (!icon.isEmpty()) {
 
             int iconX =
@@ -337,9 +195,6 @@ public final class CombatHud {
             );
         }
 
-        /*
-         * Skill adı
-         */
         String displayName =
                 name.length() > 6
                         ? name.substring(0, 6)
@@ -357,9 +212,6 @@ public final class CombatHud {
                 true
         );
 
-        /*
-         * Kullanım tuşu
-         */
         int keyWidth =
                 minecraft.font.width(key);
 
