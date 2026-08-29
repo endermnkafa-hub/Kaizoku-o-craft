@@ -13,11 +13,13 @@ public final class SkillRegistry {
             new ArrayList<>();
 
     static {
+
         register(
                 new SkillDefinition(
                         "punch",
                         "Punch",
-                        new ItemStack(Items.LEATHER)
+                        new ItemStack(Items.LEATHER),
+                        350L
                 )
         );
 
@@ -25,15 +27,8 @@ public final class SkillRegistry {
                 new SkillDefinition(
                         "heavy_punch",
                         "Heavy",
-                        new ItemStack(Items.IRON_INGOT)
-                )
-        );
-
-        register(
-                new SkillDefinition(
-                        "dash",
-                        "Dash",
-                        new ItemStack(Items.FEATHER)
+                        new ItemStack(Items.IRON_INGOT),
+                        1200L
                 )
         );
 
@@ -41,7 +36,8 @@ public final class SkillRegistry {
                 new SkillDefinition(
                         "shockwave",
                         "Shock",
-                        new ItemStack(Items.COBBLESTONE)
+                        new ItemStack(Items.COBBLESTONE),
+                        1800L
                 )
         );
 
@@ -49,7 +45,8 @@ public final class SkillRegistry {
                 new SkillDefinition(
                         "uppercut",
                         "Upper",
-                        new ItemStack(Items.GOLD_INGOT)
+                        new ItemStack(Items.GOLD_INGOT),
+                        1300L
                 )
         );
 
@@ -57,7 +54,8 @@ public final class SkillRegistry {
                 new SkillDefinition(
                         "guard",
                         "Guard",
-                        new ItemStack(Items.SHIELD)
+                        new ItemStack(Items.SHIELD),
+                        3000L
                 )
         );
     }
