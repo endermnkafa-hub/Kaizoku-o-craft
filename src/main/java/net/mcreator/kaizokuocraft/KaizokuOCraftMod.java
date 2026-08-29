@@ -106,11 +106,15 @@ public class KaizokuOCraftMod {
 			workToBeScheduled.add(new IntObjectImmutablePair<>(delay, action));
 	}
 
-	while (!workQueue.isEmpty() && currentTick >= workQueue.peek().getTick()) {
-	    workQueue.poll().run();
+	@SubscribeEvent
+	public void tick(ServerTickEvent.Post event) {
+		int currentTick = event.getServer().getTickCount();
+		IntObjectPair<Runnable> work;
+		while ((work = workToBeScheduled.poll()) != null) {
+			workQueue.add(new TickTask(currentTick + work.leftInt(), work.right()));
+		}
+		while (!workQueue.isEmpty() && currentTick >= workQueue.peek().getTick()) {
+			workQueue.poll().run();
+		}
 	}
-	
-	StaminaManager.tickServer(
-	        event.getServer()
-	);
 }
