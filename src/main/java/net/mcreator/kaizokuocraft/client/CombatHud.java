@@ -2,6 +2,7 @@ package net.mcreator.kaizokuocraft.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+
 import net.minecraft.world.item.ItemStack;
 
 import net.neoforged.bus.api.SubscribeEvent;
@@ -9,9 +10,12 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public final class CombatHud {
 
-    private static final int SLOT_WIDTH = 34;
-    private static final int SLOT_HEIGHT = 44;
-    private static final int SLOT_GAP = 3;
+    private static final int SLOT_WIDTH = 32;
+    private static final int SLOT_HEIGHT = 42;
+    private static final int SLOT_GAP = 2;
+
+    private static final int STAMINA_WIDTH = 28;
+    private static final int STAMINA_GAP = 4;
 
     private static final float ANIMATION_DISTANCE = 18.0F;
     private static final double ANIMATION_SPEED = 0.18D;
@@ -136,10 +140,15 @@ public final class CombatHud {
         int slotCount =
                 SkillLoadout.getSlotCount();
 
-        int totalWidth =
+        int totalSkillWidth =
                 SLOT_WIDTH * slotCount
                         + SLOT_GAP
                         * (slotCount - 1);
+
+        int totalWidth =
+                totalSkillWidth
+                        + STAMINA_GAP
+                        + STAMINA_WIDTH;
 
         int startX =
                 (
@@ -153,6 +162,9 @@ public final class CombatHud {
                         - 6
                         + animationOffset;
 
+        /*
+         * SKILL SLOTLARI
+         */
         for (
                 int slot = 0;
                 slot < slotCount;
@@ -173,9 +185,27 @@ public final class CombatHud {
                     y,
                     SkillLoadout.getSkill(
                             slot
+                    ),
+                    SkillLoadout.getSkillKey(
+                            slot
                     )
             );
         }
+
+        /*
+         * STAMINA
+         */
+        int staminaX =
+                startX
+                        + totalSkillWidth
+                        + STAMINA_GAP;
+
+        drawStamina(
+                graphics,
+                minecraft,
+                staminaX,
+                y
+        );
     }
 
     private static void drawSkill(
@@ -183,17 +213,13 @@ public final class CombatHud {
             Minecraft minecraft,
             int x,
             int y,
-            SkillDefinition skill
+            SkillDefinition skill,
+            String key
     ) {
 
-        graphics.fill(
-                x + 1,
-                y + 1,
-                x + SLOT_WIDTH + 1,
-                y + SLOT_HEIGHT + 1,
-                0x80000000
-        );
-
+        /*
+         * Arka plan
+         */
         graphics.fill(
                 x,
                 y,
@@ -202,157 +228,250 @@ public final class CombatHud {
                 0xD0181818
         );
 
+        /*
+         * Cooldown kontrolü
+         */
+        long remaining =
+                skill == null
+                        ? 0L
+                        : SkillCooldownClient
+                                .getRemainingMillis(
+                                        skill.id()
+                                );
+
+        boolean onCooldown =
+                remaining > 0L;
+
+        /*
+         * Cooldown karartması.
+         * Önce arka plana çiziliyor,
+         * böylece ikon ve yazılar üstünde kalıyor.
+         */
+        if (onCooldown) {
+
+            graphics.fill(
+                    x,
+                    y,
+                    x + SLOT_WIDTH,
+                    y + SLOT_HEIGHT,
+                    0xAA080808
+            );
+        }
+
         drawBorder(
                 graphics,
                 x,
                 y,
                 SLOT_WIDTH,
                 SLOT_HEIGHT,
-                0xFF999999
+                onCooldown
+                        ? 0xFF555555
+                        : 0xFF999999
         );
 
+        /*
+         * Skill
+         */
         if (skill == null) {
 
             graphics.drawCenteredString(
                     minecraft.font,
                     "?",
                     x + SLOT_WIDTH / 2,
-                    y + 8,
+                    y + 9,
                     0xFF666666
             );
 
-            return;
-        }
+        } else {
 
-        ItemStack icon =
-                skill.icon();
+            ItemStack icon =
+                    skill.icon();
 
-        if (!icon.isEmpty()) {
+            if (!icon.isEmpty()) {
 
-            int iconX =
-                    x + (SLOT_WIDTH - 16) / 2;
-
-            int iconY =
-                    y + 3;
-
-            graphics.renderItem(
-                    icon,
-                    iconX,
-                    iconY
-            );
-        }
-
-        String displayName =
-                skill.name().length() > 6
-                        ? skill.name().substring(
-                                0,
-                                6
-                        )
-                        : skill.name();
-
-        graphics.drawCenteredString(
-                minecraft.font,
-                displayName,
-                x + SLOT_WIDTH / 2,
-                y + 23,
-                0xFFFFFFFF
-        );
-
-        graphics.drawCenteredString(
-                minecraft.font,
-                getKeyForSkill(
-                        skill
-                ),
-                x + SLOT_WIDTH / 2,
-                y + 35,
-                0xFFFFD54A
-        );
-
-        /*
-         * COOLDOWN
-         */
-        long remaining =
-                SkillCooldownClient
-                        .getRemainingMillis(
-                                skill.id()
-                        );
-
-        if (remaining > 0L) {
-
-            double progress =
-                    SkillCooldownClient.getProgress(
-                            skill.id(),
-                            skill.cooldownMillis()
-                    );
-
-            int overlayHeight =
-                    (int) (
-                            SLOT_HEIGHT
-                                    * progress
-                    );
-
-            graphics.fill(
-                    x,
-                    y,
-                    x + SLOT_WIDTH,
-                    y + overlayHeight,
-                    0x99101010
-            );
-
-            String timeText;
-
-            if (remaining >= 1000L) {
-
-                timeText =
-                        String.format(
-                                "%.1f",
-                                remaining
-                                        / 1000.0D
-                        );
-
-            } else {
-
-                timeText =
-                        String.valueOf(
-                                remaining
-                        );
+                graphics.renderItem(
+                        icon,
+                        x + 8,
+                        y + 3
+                );
             }
+
+            String name =
+                    skill.name().length() > 5
+                            ? skill.name().substring(
+                                    0,
+                                    5
+                            )
+                            : skill.name();
 
             graphics.drawCenteredString(
                     minecraft.font,
-                    timeText,
+                    name,
                     x + SLOT_WIDTH / 2,
-                    y + 14,
+                    y + 22,
                     0xFFFFFFFF
             );
+
+            graphics.drawCenteredString(
+                    minecraft.font,
+                    key,
+                    x + SLOT_WIDTH / 2,
+                    y + 33,
+                    0xFFFFD54A
+            );
+
+            /*
+             * Cooldown zamanı en üstte.
+             */
+            if (onCooldown) {
+
+                String timeText;
+
+                if (remaining >= 1000L) {
+
+                    timeText =
+                            String.format(
+                                    "%.1f",
+                                    remaining
+                                            / 1000.0D
+                            );
+
+                } else {
+
+                    timeText =
+                            String.format(
+                                    "0.%01d",
+                                    (
+                                            remaining
+                                                    / 100
+                                    )
+                            );
+                }
+
+                graphics.fill(
+                        x + 3,
+                        y + 12,
+                        x + SLOT_WIDTH - 3,
+                        y + 25,
+                        0xCC000000
+                );
+
+                graphics.drawCenteredString(
+                        minecraft.font,
+                        timeText,
+                        x + SLOT_WIDTH / 2,
+                        y + 14,
+                        0xFFFFFFFF
+                );
+
+                /*
+                 * Cooldown ilerleme çizgisi.
+                 */
+                double progress =
+                        SkillCooldownClient.getProgress(
+                                skill.id(),
+                                skill.cooldownMillis()
+                        );
+
+                int barWidth =
+                        (int) (
+                                SLOT_WIDTH
+                                        * progress
+                        );
+
+                if (barWidth > 0) {
+
+                    graphics.fill(
+                            x,
+                            y + SLOT_HEIGHT - 2,
+                            x + barWidth,
+                            y + SLOT_HEIGHT,
+                            0xFF777777
+                    );
+                }
+            }
         }
     }
 
-    private static String getKeyForSkill(
-            SkillDefinition skill
+    private static void drawStamina(
+            GuiGraphics graphics,
+            Minecraft minecraft,
+            int x,
+            int y
     ) {
 
-        for (
-                int slot = 0;
-                slot < SkillLoadout.getSlotCount();
-                slot++
-        ) {
+        /*
+         * Panel
+         */
+        graphics.fill(
+                x,
+                y,
+                x + STAMINA_WIDTH,
+                y + SLOT_HEIGHT,
+                0xD0181818
+        );
 
-            if (
-                    skill.id().equals(
-                            SkillLoadout.getSkillId(
-                                    slot
-                            )
-                    )
-            ) {
+        drawBorder(
+                graphics,
+                x,
+                y,
+                STAMINA_WIDTH,
+                SLOT_HEIGHT,
+                0xFF777777
+        );
 
-                return SkillLoadout.getSkillKey(
-                        slot
+        double percentage =
+                ClientStamina.getPercentage();
+
+        int barHeight =
+                SLOT_HEIGHT - 12;
+
+        int filledHeight =
+                (int) (
+                        barHeight
+                                * percentage
                 );
-            }
+
+        /*
+         * Bar arka planı
+         */
+        graphics.fill(
+                x + 7,
+                y + 5,
+                x + STAMINA_WIDTH - 7,
+                y + 5 + barHeight,
+                0xFF303030
+        );
+
+        /*
+         * Bar
+         */
+        if (filledHeight > 0) {
+
+            int barTop =
+                    y + 5
+                            + barHeight
+                            - filledHeight;
+
+            graphics.fill(
+                    x + 7,
+                    barTop,
+                    x + STAMINA_WIDTH - 7,
+                    y + 5 + barHeight,
+                    0xFFFFD54A
+            );
         }
 
-        return "";
+        /*
+         * STA yazısı
+         */
+        graphics.drawCenteredString(
+                minecraft.font,
+                "STA",
+                x + STAMINA_WIDTH / 2,
+                y + SLOT_HEIGHT - 7,
+                0xFFFFFFFF
+        );
     }
 
     private static void drawBorder(
