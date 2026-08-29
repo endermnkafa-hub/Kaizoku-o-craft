@@ -41,9 +41,10 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
     }
 
     public void setRace(RaceType race) {
-        this.race = race == null
-                ? RaceType.HUMAN
-                : race;
+        this.race =
+                race == null
+                        ? RaceType.HUMAN
+                        : race;
     }
 
     public double getStamina() {
@@ -155,37 +156,27 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
                     RaceType.HUMAN;
         }
 
-        if (tag.contains("MaxStamina")) {
+        maxStamina =
+                tag.contains("MaxStamina")
+                        ? Math.max(
+                                1.0D,
+                                tag.getDouble(
+                                        "MaxStamina"
+                                )
+                        )
+                        : 100.0D;
 
-            maxStamina =
-                    Math.max(
-                            1.0D,
-                            tag.getDouble(
-                                    "MaxStamina"
-                            )
-                    );
-        } else {
-
-            maxStamina =
-                    100.0D;
-        }
-
-        if (tag.contains("Stamina")) {
-
-            stamina =
-                    Math.max(
-                            0.0D,
-                            Math.min(
-                                    maxStamina,
-                                    tag.getDouble(
-                                            "Stamina"
-                                    )
-                            )
-                    );
-        } else {
-
-            stamina =
-                    maxStamina;
-        }
+        stamina =
+                tag.contains("Stamina")
+                        ? Math.max(
+                                0.0D,
+                                Math.min(
+                                        maxStamina,
+                                        tag.getDouble(
+                                                "Stamina"
+                                        )
+                                )
+                        )
+                        : maxStamina;
     }
 }
