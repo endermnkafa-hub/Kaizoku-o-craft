@@ -1,15 +1,13 @@
 package net.mcreator.kaizokuocraft.client;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-
 public final class SkillLoadout {
 
     private static final int SLOT_COUNT = 9;
 
-    private static final String[] skillNames = new String[SLOT_COUNT];
-    private static final ItemStack[] skillIcons = new ItemStack[SLOT_COUNT];
-    private static final String[] skillKeys = {
+    private static final String[] slots =
+            new String[SLOT_COUNT];
+
+    private static final String[] keys = {
             "Z",
             "X",
             "C",
@@ -24,10 +22,10 @@ public final class SkillLoadout {
     private static int selectedSlot = 0;
 
     static {
+
         clearAll();
 
-        skillNames[0] = "Punch";
-        skillIcons[0] = new ItemStack(Items.LEATHER);
+        slots[0] = "punch";
     }
 
     private SkillLoadout() {
@@ -37,45 +35,85 @@ public final class SkillLoadout {
         return SLOT_COUNT;
     }
 
-    public static String getSkillName(int slot) {
+    public static String getSkillId(
+            int slot
+    ) {
+
         if (!isValidSlot(slot)) {
+            return null;
+        }
+
+        return slots[slot];
+    }
+
+    public static SkillDefinition getSkill(
+            int slot
+    ) {
+
+        String id =
+                getSkillId(slot);
+
+        if (id == null) {
+            return null;
+        }
+
+        return SkillRegistry.getSkill(id);
+    }
+
+    public static String getSkillName(
+            int slot
+    ) {
+
+        SkillDefinition skill =
+                getSkill(slot);
+
+        if (skill == null) {
             return "Empty";
         }
 
-        return skillNames[slot] == null
-                ? "Empty"
-                : skillNames[slot];
+        return skill.name();
     }
 
-    public static ItemStack getSkillIcon(int slot) {
-        if (!isValidSlot(slot)) {
-            return ItemStack.EMPTY;
+    public static net.minecraft.world.item.ItemStack getSkillIcon(
+            int slot
+    ) {
+
+        SkillDefinition skill =
+                getSkill(slot);
+
+        if (skill == null) {
+            return net.minecraft.world.item.ItemStack.EMPTY;
         }
 
-        if (skillIcons[slot] == null) {
-            return ItemStack.EMPTY;
-        }
-
-        return skillIcons[slot].copy();
+        return skill.icon().copy();
     }
 
-    public static String getSkillKey(int slot) {
+    public static String getSkillKey(
+            int slot
+    ) {
+
         if (!isValidSlot(slot)) {
             return "";
         }
 
-        return skillKeys[slot];
+        return keys[slot];
     }
 
-    public static boolean isEmpty(int slot) {
-        return getSkillName(slot).equals("Empty");
+    public static boolean isEmpty(
+            int slot
+    ) {
+
+        return getSkill(slot) == null;
     }
 
     public static int getSelectedSlot() {
         return selectedSlot;
     }
 
-    public static void selectSlot(int slot) {
+    public static void selectSlot(
+            int slot
+    ) {
+
         if (isValidSlot(slot)) {
             selectedSlot = slot;
         }
@@ -83,41 +121,47 @@ public final class SkillLoadout {
 
     public static void setSkill(
             int slot,
-            String name,
-            ItemStack icon
+            String skillId
     ) {
+
         if (!isValidSlot(slot)) {
             return;
         }
 
-        skillNames[slot] =
-                name == null || name.isBlank()
-                        ? "Empty"
-                        : name;
+        if (
+                skillId == null
+                        || SkillRegistry.getSkill(skillId) == null
+        ) {
+            slots[slot] = null;
+            return;
+        }
 
-        skillIcons[slot] =
-                icon == null
-                        ? ItemStack.EMPTY
-                        : icon.copy();
+        slots[slot] = skillId;
     }
 
-    public static void clearSlot(int slot) {
+    public static void clearSlot(
+            int slot
+    ) {
+
         if (!isValidSlot(slot)) {
             return;
         }
 
-        skillNames[slot] = "Empty";
-        skillIcons[slot] = ItemStack.EMPTY;
+        slots[slot] = null;
     }
 
     public static void clearAll() {
+
         for (int i = 0; i < SLOT_COUNT; i++) {
-            skillNames[i] = "Empty";
-            skillIcons[i] = ItemStack.EMPTY;
+            slots[i] = null;
         }
     }
 
-    private static boolean isValidSlot(int slot) {
-        return slot >= 0 && slot < SLOT_COUNT;
+    private static boolean isValidSlot(
+            int slot
+    ) {
+
+        return slot >= 0
+                && slot < SLOT_COUNT;
     }
 }
