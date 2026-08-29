@@ -107,11 +107,11 @@ public final class SkillManager {
         switch (skillId) {
             case "punch" -> {
                 punch(player, 1.0D);
-                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.punch", true, true));
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "animation.model.punch", true, true));
             }
             case "heavy_punch" -> {
                 punch(player, 1.8D);
-                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.punch", true, true));
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "animation.model.punch", true, true));
             }
             case "shockwave" -> shockwave(player);
             case "uppercut" -> uppercut(player);
