@@ -10,14 +10,14 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class StaminaManager {
 
     /*
-     * Level 1:
-     * 100 stamina
+     * ==========================================
+     * MAX STAMINA
+     * ==========================================
      *
-     * Her level:
-     * +30 max stamina
+     * Level 1  = 100
+     * Her level = +30
      *
-     * Level 10:
-     * 370 stamina
+     * Level 10 = 370
      */
     public static final double BASE_MAX_STAMINA =
             100.0D;
@@ -26,22 +26,31 @@ public final class StaminaManager {
             30.0D;
 
     /*
-     * STAMİNANIN 0 -> FULL OLMASI:
+     * ==========================================
+     * REGEN SÜRESİ
+     * ==========================================
      *
-     * 2 dakika = 120 saniye
-     * 20 tick = 1 saniye
-     * 120 x 20 = 2400 tick
+     * Bu değer:
      *
-     * Dolayısıyla:
+     * "0 -> max stamina"
+     * ne kadar sürede tamamlanacak?
      *
-     * regen / tick =
-     * max stamina / 2400
+     * 120 = 2 dakika
+     * 60  = 1 dakika
      *
-     * Böylece level ne olursa olsun
-     * 0'dan full'e tam 2 dakika sürer.
+     * ÖNEMLİ:
+     *
+     * Max stamina yükselirse regen hızı
+     * otomatik olarak yükselir.
+     *
+     * Örnek:
+     *
+     * 120 max / 120 sn = 1 STA/sn
+     * 240 max / 120 sn = 2 STA/sn
+     * 370 max / 120 sn = 3.08 STA/sn
      */
-    private static final double FULL_REGEN_TICKS =
-            120.0D * 20.0D;
+    public static final double REGEN_DURATION_SECONDS =
+            120.0D;
 
     /*
      * Client'a her 5 tickte bir sync.
@@ -52,6 +61,11 @@ public final class StaminaManager {
     private StaminaManager() {
     }
 
+    /*
+     * ==========================================
+     * MAX STAMINA HESABI
+     * ==========================================
+     */
     public static double getMaxStaminaForLevel(
             long level
     ) {
@@ -74,7 +88,9 @@ public final class StaminaManager {
     }
 
     /*
-     * Level'a göre max stamina.
+     * ==========================================
+     * MAX STAMINA GÜNCELLE
+     * ==========================================
      */
     public static void updateMaxStamina(
             ServerPlayer player
@@ -96,7 +112,9 @@ public final class StaminaManager {
     }
 
     /*
-     * Stamina harca.
+     * ==========================================
+     * STAMINA HARCAMA
+     * ==========================================
      */
     public static boolean consume(
             ServerPlayer player,
@@ -119,15 +137,14 @@ public final class StaminaManager {
                 player
         );
 
+        /*
+         * Yeterli stamina yok.
+         */
         if (
                 data.getStamina()
                         < amount
         ) {
 
-            /*
-             * Client tarafında eski değer varsa
-             * server gerçeğini tekrar gönder.
-             */
             sync(
                     player
             );
@@ -135,11 +152,17 @@ public final class StaminaManager {
             return false;
         }
 
+        /*
+         * Stamina düşür.
+         */
         data.setStamina(
                 data.getStamina()
                         - amount
         );
 
+        /*
+         * Anında client'a gönder.
+         */
         sync(
                 player
         );
@@ -148,19 +171,23 @@ public final class StaminaManager {
     }
 
     /*
-     * REGEN
+     * ==========================================
+     * STAMINA REGEN
+     * ==========================================
      *
-     * Her oyuncunun max stamina'sına göre
-     * dinamik hesaplanır.
+     * FORMÜL:
      *
-     * Level 1:
-     * 100 / 2400 = 0.041666... / tick
+     * regen/tick =
+     * maxStamina /
+     * (regenDurationSeconds * 20)
      *
-     * Level 10:
-     * 370 / 2400 = 0.154166... / tick
+     * Böylece:
      *
-     * İkisinde de:
-     * 0 -> full = 120 saniye
+     * 100 max → 0 -> 100 = 120 sn
+     * 370 max → 0 -> 370 = 120 sn
+     *
+     * Yani max stamina büyüdükçe
+     * regen hızı da büyür.
      */
     public static void regenerate(
             ServerPlayer player
@@ -171,6 +198,9 @@ public final class StaminaManager {
                         player
                 );
 
+        /*
+         * Level değişmiş olabilir.
+         */
         updateMaxStamina(
                 player
         );
@@ -181,13 +211,13 @@ public final class StaminaManager {
         double max =
                 data.getMaxStamina();
 
+        /*
+         * Zaten full.
+         */
         if (
                 current >= max
         ) {
 
-            /*
-             * Full ise hiçbir şey yapma.
-             */
             if (
                     current > max
             ) {
@@ -201,29 +231,31 @@ public final class StaminaManager {
         }
 
         /*
-         * 0 -> full tam 2400 tick.
+         * 20 tick = 1 saniye.
          */
         double regenPerTick =
                 max
-                        / FULL_REGEN_TICKS;
+                        / (
+                        REGEN_DURATION_SECONDS
+                                * 20.0D
+                );
 
         /*
-         * Full'e yaklaşırken taşmayı önle.
+         * Max değerini aşma.
          */
-        double newStamina =
+        data.setStamina(
                 Math.min(
                         max,
                         current
                                 + regenPerTick
-                );
-
-        data.setStamina(
-                newStamina
+                )
         );
     }
 
     /*
-     * Server tick.
+     * ==========================================
+     * SERVER TICK
+     * ==========================================
      */
     public static void tickServer(
             MinecraftServer server
@@ -238,6 +270,13 @@ public final class StaminaManager {
                         .getPlayers()
         ) {
 
+            /*
+             * HER DURUMDA regen:
+             *
+             * Normal
+             * Combat
+             * Menü
+             */
             regenerate(
                     player
             );
@@ -258,7 +297,9 @@ public final class StaminaManager {
     }
 
     /*
-     * Client'a stamina gönder.
+     * ==========================================
+     * CLIENT SYNC
+     * ==========================================
      */
     public static void sync(
             ServerPlayer player
