@@ -52,6 +52,12 @@ public class KaizokuOCraftMod {
 		NeoForge.EVENT_BUS.register(ExperienceEvents.class);
 		NeoForge.EVENT_BUS.register(DamageEvents.class);
 		addNetworkMessage(SyncPlayerDataPacket.TYPE, SyncPlayerDataPacket.STREAM_CODEC, SyncPlayerDataPacket::handle);
+
+		addNetworkMessage(
+        		SkillUsePacket.TYPE,
+        		SkillUsePacket.STREAM_CODEC,
+        		SkillUsePacket::handle
+		);
 		/*
 		* CLIENT
 		*
