@@ -2,7 +2,6 @@ package net.mcreator.kaizokuocraft.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-
 import net.minecraft.world.item.ItemStack;
 
 import net.neoforged.bus.api.SubscribeEvent;
@@ -10,19 +9,23 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 public final class CombatHud {
 
-    private static final int SLOT_WIDTH = 32;
-    private static final int SLOT_HEIGHT = 42;
+    private static final int SLOT_WIDTH = 30;
+    private static final int SLOT_HEIGHT = 40;
     private static final int SLOT_GAP = 2;
 
-    private static final int STAMINA_WIDTH = 28;
-    private static final int STAMINA_GAP = 4;
+    private static final int STAMINA_WIDTH = 22;
+    private static final int STAMINA_GAP = 3;
 
     private static final float ANIMATION_DISTANCE = 18.0F;
     private static final double ANIMATION_SPEED = 0.18D;
 
     private static boolean lastCombatState = false;
-    private static double animationProgress = 0.0D;
-    private static long lastFrameTime = System.nanoTime();
+
+    private static double animationProgress =
+            0.0D;
+
+    private static long lastFrameTime =
+            System.nanoTime();
 
     private CombatHud() {
     }
@@ -112,8 +115,7 @@ public final class CombatHud {
 
         double easedProgress =
                 1.0D - Math.pow(
-                        1.0D
-                                - animationProgress,
+                        1.0D - animationProgress,
                         3.0D
                 );
 
@@ -140,13 +142,13 @@ public final class CombatHud {
         int slotCount =
                 SkillLoadout.getSlotCount();
 
-        int totalSkillWidth =
+        int skillWidth =
                 SLOT_WIDTH * slotCount
                         + SLOT_GAP
                         * (slotCount - 1);
 
         int totalWidth =
-                totalSkillWidth
+                skillWidth
                         + STAMINA_GAP
                         + STAMINA_WIDTH;
 
@@ -163,7 +165,7 @@ public final class CombatHud {
                         + animationOffset;
 
         /*
-         * SKILL SLOTLARI
+         * SKILL BAR
          */
         for (
                 int slot = 0;
@@ -193,11 +195,11 @@ public final class CombatHud {
         }
 
         /*
-         * STAMINA
+         * STAMINA BAR
          */
         int staminaX =
                 startX
-                        + totalSkillWidth
+                        + skillWidth
                         + STAMINA_GAP;
 
         drawStamina(
@@ -217,9 +219,6 @@ public final class CombatHud {
             String key
     ) {
 
-        /*
-         * Arka plan
-         */
         graphics.fill(
                 x,
                 y,
@@ -228,9 +227,6 @@ public final class CombatHud {
                 0xD0181818
         );
 
-        /*
-         * Cooldown kontrolü
-         */
         long remaining =
                 skill == null
                         ? 0L
@@ -239,15 +235,13 @@ public final class CombatHud {
                                         skill.id()
                                 );
 
-        boolean onCooldown =
+        boolean cooldown =
                 remaining > 0L;
 
         /*
-         * Cooldown karartması.
-         * Önce arka plana çiziliyor,
-         * böylece ikon ve yazılar üstünde kalıyor.
+         * Cooldown arka planı.
          */
-        if (onCooldown) {
+        if (cooldown) {
 
             graphics.fill(
                     x,
@@ -264,131 +258,137 @@ public final class CombatHud {
                 y,
                 SLOT_WIDTH,
                 SLOT_HEIGHT,
-                onCooldown
+                cooldown
                         ? 0xFF555555
                         : 0xFF999999
         );
 
-        /*
-         * Skill
-         */
         if (skill == null) {
 
             graphics.drawCenteredString(
                     minecraft.font,
                     "?",
                     x + SLOT_WIDTH / 2,
-                    y + 9,
+                    y + 8,
                     0xFF666666
             );
 
-        } else {
+            return;
+        }
 
-            ItemStack icon =
-                    skill.icon();
+        ItemStack icon =
+                skill.icon();
 
-            if (!icon.isEmpty()) {
+        if (!icon.isEmpty()) {
 
-                graphics.renderItem(
-                        icon,
-                        x + 8,
-                        y + 3
-                );
+            graphics.renderItem(
+                    icon,
+                    x + 7,
+                    y + 2
+            );
+        }
+
+        String name =
+                skill.name().length() > 4
+                        ? skill.name().substring(
+                                0,
+                                4
+                        )
+                        : skill.name();
+
+        graphics.drawCenteredString(
+                minecraft.font,
+                name,
+                x + SLOT_WIDTH / 2,
+                y + 21,
+                0xFFFFFFFF
+        );
+
+        graphics.drawCenteredString(
+                minecraft.font,
+                key,
+                x + SLOT_WIDTH / 2,
+                y + 32,
+                0xFFFFD54A
+        );
+
+        /*
+         * Cooldown yazısı artık skillin
+         * üstünde, okunabilir şekilde.
+         */
+        if (cooldown) {
+
+            String timeText;
+
+            if (remaining >= 1000L) {
+
+                timeText =
+                        String.format(
+                                "%.1f",
+                                remaining
+                                        / 1000.0D
+                        );
+
+            } else {
+
+                timeText =
+                        String.valueOf(
+                                Math.max(
+                                        0L,
+                                        remaining
+                                                / 100L
+                                )
+                        );
             }
 
-            String name =
-                    skill.name().length() > 5
-                            ? skill.name().substring(
-                                    0,
-                                    5
-                            )
-                            : skill.name();
+            int boxLeft =
+                    x + 2;
+
+            int boxTop =
+                    y + 11;
+
+            graphics.fill(
+                    boxLeft,
+                    boxTop,
+                    x + SLOT_WIDTH - 2,
+                    boxTop + 11,
+                    0xDD000000
+            );
 
             graphics.drawCenteredString(
                     minecraft.font,
-                    name,
+                    timeText,
                     x + SLOT_WIDTH / 2,
-                    y + 22,
+                    boxTop + 1,
                     0xFFFFFFFF
             );
 
-            graphics.drawCenteredString(
-                    minecraft.font,
-                    key,
-                    x + SLOT_WIDTH / 2,
-                    y + 33,
-                    0xFFFFD54A
-            );
-
             /*
-             * Cooldown zamanı en üstte.
+             * Cooldown ilerleme çizgisi
              */
-            if (onCooldown) {
+            double progress =
+                    SkillCooldownClient.getProgress(
+                            skill.id(),
+                            skill.cooldownMillis()
+                    );
 
-                String timeText;
+            int progressWidth =
+                    (int) (
+                            SLOT_WIDTH
+                                    * progress
+                    );
 
-                if (remaining >= 1000L) {
-
-                    timeText =
-                            String.format(
-                                    "%.1f",
-                                    remaining
-                                            / 1000.0D
-                            );
-
-                } else {
-
-                    timeText =
-                            String.format(
-                                    "0.%01d",
-                                    (
-                                            remaining
-                                                    / 100
-                                    )
-                            );
-                }
+            if (
+                    progressWidth > 0
+            ) {
 
                 graphics.fill(
-                        x + 3,
-                        y + 12,
-                        x + SLOT_WIDTH - 3,
-                        y + 25,
-                        0xCC000000
+                        x,
+                        y + SLOT_HEIGHT - 2,
+                        x + progressWidth,
+                        y + SLOT_HEIGHT,
+                        0xFF777777
                 );
-
-                graphics.drawCenteredString(
-                        minecraft.font,
-                        timeText,
-                        x + SLOT_WIDTH / 2,
-                        y + 14,
-                        0xFFFFFFFF
-                );
-
-                /*
-                 * Cooldown ilerleme çizgisi.
-                 */
-                double progress =
-                        SkillCooldownClient.getProgress(
-                                skill.id(),
-                                skill.cooldownMillis()
-                        );
-
-                int barWidth =
-                        (int) (
-                                SLOT_WIDTH
-                                        * progress
-                        );
-
-                if (barWidth > 0) {
-
-                    graphics.fill(
-                            x,
-                            y + SLOT_HEIGHT - 2,
-                            x + barWidth,
-                            y + SLOT_HEIGHT,
-                            0xFF777777
-                    );
-                }
             }
         }
     }
@@ -400,9 +400,6 @@ public final class CombatHud {
             int y
     ) {
 
-        /*
-         * Panel
-         */
         graphics.fill(
                 x,
                 y,
@@ -426,50 +423,43 @@ public final class CombatHud {
         int barHeight =
                 SLOT_HEIGHT - 12;
 
-        int filledHeight =
+        graphics.fill(
+                x + 5,
+                y + 5,
+                x + STAMINA_WIDTH - 5,
+                y + 5 + barHeight,
+                0xFF303030
+        );
+
+        int filled =
                 (int) (
                         barHeight
                                 * percentage
                 );
 
-        /*
-         * Bar arka planı
-         */
-        graphics.fill(
-                x + 7,
-                y + 5,
-                x + STAMINA_WIDTH - 7,
-                y + 5 + barHeight,
-                0xFF303030
-        );
+        if (
+                filled > 0
+        ) {
 
-        /*
-         * Bar
-         */
-        if (filledHeight > 0) {
-
-            int barTop =
+            int top =
                     y + 5
                             + barHeight
-                            - filledHeight;
+                            - filled;
 
             graphics.fill(
-                    x + 7,
-                    barTop,
-                    x + STAMINA_WIDTH - 7,
+                    x + 5,
+                    top,
+                    x + STAMINA_WIDTH - 5,
                     y + 5 + barHeight,
                     0xFFFFD54A
             );
         }
 
-        /*
-         * STA yazısı
-         */
         graphics.drawCenteredString(
                 minecraft.font,
-                "STA",
+                "S",
                 x + STAMINA_WIDTH / 2,
-                y + SLOT_HEIGHT - 7,
+                y + SLOT_HEIGHT - 8,
                 0xFFFFFFFF
         );
     }
