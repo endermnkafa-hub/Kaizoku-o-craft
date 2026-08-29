@@ -38,7 +38,7 @@ public final class CombatVanillaHud {
         }
 
         /*
-         * Vanilla XP barı gizle.
+         * Vanilla XP barını gizle.
          */
         if (
                 event.getName()
@@ -50,14 +50,12 @@ public final class CombatVanillaHud {
             event.setCanceled(
                     true
             );
-
-            return;
         }
 
         /*
-         * HEALTH → BIRAK
-         * FOOD   → BIRAK
-         * ARMOR  → BIRAK
+         * CAN'A DOKUNMUYORUZ.
+         * AÇLIĞA DOKUNMUYORUZ.
+         * ARMOR'A DOKUNMUYORUZ.
          */
     }
 }
