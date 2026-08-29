@@ -9,11 +9,14 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class StaminaManager {
 
-    public static final double DEFAULT_MAX_STAMINA =
+    public static final double BASE_MAX_STAMINA =
             100.0D;
 
+    public static final double STAMINA_PER_LEVEL =
+            2.0D;
+
     public static final double REGEN_PER_TICK =
-            0.20D;
+            0.35D;
 
     private static final int SYNC_INTERVAL =
             5;
@@ -21,12 +24,51 @@ public final class StaminaManager {
     private StaminaManager() {
     }
 
+    public static double getMaxStaminaForLevel(
+            long level
+    ) {
+
+        if (level < 1L) {
+            level = 1L;
+        }
+
+        return BASE_MAX_STAMINA
+                + (
+                Math.max(
+                        0L,
+                        level - 1L
+                )
+                        * STAMINA_PER_LEVEL
+        );
+    }
+
+    public static void updateMaxStamina(
+            ServerPlayer player
+    ) {
+
+        PlayerData data =
+                PlayerDataManager.get(
+                        player
+                );
+
+        double newMax =
+                getMaxStaminaForLevel(
+                        data.getLevel()
+                );
+
+        data.setMaxStamina(
+                newMax
+        );
+    }
+
     public static boolean consume(
             ServerPlayer player,
             double amount
     ) {
 
-        if (amount <= 0.0D) {
+        if (
+                amount <= 0.0D
+        ) {
             return true;
         }
 
@@ -34,6 +76,10 @@ public final class StaminaManager {
                 PlayerDataManager.get(
                         player
                 );
+
+        updateMaxStamina(
+                player
+        );
 
         if (
                 data.getStamina()
@@ -47,7 +93,9 @@ public final class StaminaManager {
                         - amount
         );
 
-        sync(player);
+        sync(
+                player
+        );
 
         return true;
     }
@@ -61,14 +109,25 @@ public final class StaminaManager {
                         player
                 );
 
+        double oldMax =
+                data.getMaxStamina();
+
+        updateMaxStamina(
+                player
+        );
+
+        /*
+         * Level atladıysa max stamina yükselir.
+         */
         if (
                 data.getMaxStamina()
-                        <= 0.0D
+                        > oldMax
         ) {
 
-            data.setMaxStamina(
-                    DEFAULT_MAX_STAMINA
-            );
+            /*
+             * Yeni kapasitenin tamamını
+             * anında vermiyoruz.
+             */
         }
 
         if (
@@ -95,17 +154,18 @@ public final class StaminaManager {
                         .getPlayers()
         ) {
 
-            regenerate(player);
+            regenerate(
+                    player
+            );
 
-            /*
-             * Her 5 tickte clientı güncelle.
-             */
             if (
                     tick % SYNC_INTERVAL
                             == 0
             ) {
 
-                sync(player);
+                sync(
+                        player
+                );
             }
         }
     }
