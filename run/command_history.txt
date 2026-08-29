@@ -18,3 +18,4 @@
 /kaizoku_level reset
 /kaizoku_level set 10
 /kaizoku_xp set 20
+/kaizoku_level set 1
