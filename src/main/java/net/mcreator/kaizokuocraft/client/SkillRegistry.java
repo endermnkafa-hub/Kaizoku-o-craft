@@ -1,5 +1,6 @@
 package net.mcreator.kaizokuocraft.client;
 
+import net.mcreator.kaizokuocraft.player.FightingStyle;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -14,39 +15,52 @@ public final class SkillRegistry {
 
     static {
 
+        // FIST STYLES
         register(
                 new SkillDefinition(
                         "punch",
                         "Punch",
                         new ItemStack(Items.LEATHER),
-                        350L
+                        350L,
+                        FightingStyle.FIST,
+                        0.0D,
+                        5.0D
                 )
         );
 
         register(
                 new SkillDefinition(
                         "heavy_punch",
-                        "Heavy",
+                        "Heavy Punch",
                         new ItemStack(Items.IRON_INGOT),
-                        1200L
+                        1200L,
+                        FightingStyle.FIST,
+                        15.0D,
+                        15.0D
                 )
         );
 
         register(
                 new SkillDefinition(
                         "shockwave",
-                        "Shock",
+                        "Shockwave",
                         new ItemStack(Items.COBBLESTONE),
-                        1800L
+                        1800L,
+                        FightingStyle.FIST,
+                        30.0D,
+                        35.0D
                 )
         );
 
         register(
                 new SkillDefinition(
                         "uppercut",
-                        "Upper",
+                        "Uppercut",
                         new ItemStack(Items.GOLD_INGOT),
-                        1300L
+                        1300L,
+                        FightingStyle.FIST,
+                        10.0D,
+                        10.0D
                 )
         );
 
@@ -55,7 +69,109 @@ public final class SkillRegistry {
                         "guard",
                         "Guard",
                         new ItemStack(Items.SHIELD),
-                        3000L
+                        3000L,
+                        FightingStyle.FIST,
+                        5.0D,
+                        15.0D
+                )
+        );
+
+        // SWORD STYLES
+        register(
+                new SkillDefinition(
+                        "sword_slash",
+                        "1-Sword Slash",
+                        new ItemStack(Items.IRON_SWORD),
+                        1000L,
+                        FightingStyle.SWORD,
+                        0.0D,
+                        8.0D
+                )
+        );
+
+        register(
+                new SkillDefinition(
+                        "oni_giri",
+                        "Oni Giri",
+                        new ItemStack(Items.DIAMOND_SWORD),
+                        2500L,
+                        FightingStyle.SWORD,
+                        25.0D,
+                        20.0D
+                )
+        );
+
+        register(
+                new SkillDefinition(
+                        "shishi_sonson",
+                        "Shishi Sonson",
+                        new ItemStack(Items.NETHERITE_SWORD),
+                        4000L,
+                        FightingStyle.SWORD,
+                        50.0D,
+                        40.0D
+                )
+        );
+
+        // KICK STYLES
+        register(
+                new SkillDefinition(
+                        "collier_kick",
+                        "Collier Kick",
+                        new ItemStack(Items.LEATHER_BOOTS),
+                        1200L,
+                        FightingStyle.KICK,
+                        0.0D,
+                        8.0D
+                )
+        );
+
+        register(
+                new SkillDefinition(
+                        "concasse",
+                        "Concassé",
+                        new ItemStack(Items.IRON_BOOTS),
+                        2800L,
+                        FightingStyle.KICK,
+                        25.0D,
+                        22.0D
+                )
+        );
+
+        register(
+                new SkillDefinition(
+                        "diable_jambe",
+                        "Diable Jambe",
+                        new ItemStack(Items.BLAZE_POWDER),
+                        6000L,
+                        FightingStyle.KICK,
+                        60.0D,
+                        50.0D
+                )
+        );
+
+        // SNIPER STYLES
+        register(
+                new SkillDefinition(
+                        "firebird_star",
+                        "Firebird Star",
+                        new ItemStack(Items.FIRE_CHARGE),
+                        1500L,
+                        FightingStyle.SNIPER,
+                        0.0D,
+                        12.0D
+                )
+        );
+
+        register(
+                new SkillDefinition(
+                        "gunpowder_star",
+                        "Gunpowder Star",
+                        new ItemStack(Items.GUNPOWDER),
+                        2000L,
+                        FightingStyle.SNIPER,
+                        20.0D,
+                        18.0D
                 )
         );
     }

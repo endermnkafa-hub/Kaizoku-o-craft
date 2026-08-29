@@ -55,14 +55,7 @@ public final class RaceCommand {
                                                     player,
                                                     race
                                             );
-                                            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(
-											        player,
-											        new net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket(
-											                PlayerDataManager.getLevel(player),
-											                PlayerDataManager.getExperience(player),
-											                race
-											        )
-											);
+                                            PlayerDataManager.sync(player);
 
                                             context.getSource().sendSuccess(
                                                     () -> Component.literal(

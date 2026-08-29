@@ -25,6 +25,7 @@ import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.network.StaminaSyncPacket;
 import net.mcreator.kaizokuocraft.network.SkillUsePacket;
+import net.mcreator.kaizokuocraft.network.AllocateStatPacket;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
 import net.mcreator.kaizokuocraft.client.CombatVanillaHud;
 import net.mcreator.kaizokuocraft.client.CombatHud;
@@ -55,12 +56,15 @@ public class KaizokuOCraftMod {
 		addNetworkMessage(SyncPlayerDataPacket.TYPE, SyncPlayerDataPacket.STREAM_CODEC, SyncPlayerDataPacket::handle);
 		addNetworkMessage(SkillUsePacket.TYPE, SkillUsePacket.STREAM_CODEC, SkillUsePacket::handle);
 		addNetworkMessage(StaminaSyncPacket.TYPE, StaminaSyncPacket.STREAM_CODEC, StaminaSyncPacket::handle);
+		addNetworkMessage(AllocateStatPacket.TYPE, AllocateStatPacket.STREAM_CODEC, AllocateStatPacket::handle);
+		addNetworkMessage(net.mcreator.kaizokuocraft.network.PlayPlayerAnimationMessage.TYPE, net.mcreator.kaizokuocraft.network.PlayPlayerAnimationMessage.STREAM_CODEC, net.mcreator.kaizokuocraft.network.PlayPlayerAnimationMessage::handleData);
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			modEventBus.register(ClientEventHandler.class);
 			NeoForge.EVENT_BUS.register(ClientGameEventHandler.class);
 			NeoForge.EVENT_BUS.register(KaizokuHud.class);
 			NeoForge.EVENT_BUS.register(CombatHud.class);
 			NeoForge.EVENT_BUS.register(CombatVanillaHud.class);
+			NeoForge.EVENT_BUS.register(net.mcreator.kaizokuocraft.client.render.KaizokuPlayerRenderer.class);
 		}
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
@@ -76,6 +80,8 @@ public class KaizokuOCraftMod {
 		PowerCommand.register(event.getDispatcher());
 		RaceCommand.register(event.getDispatcher());
 		LevelCommand.register(event.getDispatcher());
+		StyleCommand.register(event.getDispatcher());
+		MasteryCommand.register(event.getDispatcher());
 	}
 
 	// End of user code block mod methods

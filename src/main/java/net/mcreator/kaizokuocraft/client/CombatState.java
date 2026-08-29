@@ -2,7 +2,7 @@ package net.mcreator.kaizokuocraft.client;
 
 public final class CombatState {
 
-    private static boolean active = false;
+    private static boolean active = true;
 
     private CombatState() {
     }

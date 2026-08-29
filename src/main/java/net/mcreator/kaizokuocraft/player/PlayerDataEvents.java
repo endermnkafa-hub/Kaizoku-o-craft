@@ -52,14 +52,7 @@ public final class PlayerDataEvents {
         /*
          * Normal player data.
          */
-        PacketDistributor.sendToPlayer(
-                player,
-                new SyncPlayerDataPacket(
-                        data.getLevel(),
-                        data.getExperience(),
-                        data.getRace()
-                )
-        );
+        PlayerDataManager.sync(player);
 
         /*
          * Gerçek server stamina'sı.

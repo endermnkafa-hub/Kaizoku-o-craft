@@ -246,13 +246,16 @@ public class KaizokuMenuScreen extends Screen {
                 true
         );
 
-        int libraryIndex =
-                0;
+        int libraryIndex = 0;
+        String activeStyle = ClientPlayerData.getCombatStyle();
 
         for (
                 SkillDefinition skill :
                 SkillRegistry.getSkills()
         ) {
+            if (skill.style() != null && !skill.style().name().equalsIgnoreCase(activeStyle)) {
+                continue;
+            }
 
             if (
                     libraryIndex >= 9
@@ -355,6 +358,34 @@ public class KaizokuMenuScreen extends Screen {
         );
     }
 
+    private boolean isSkillUnlocked(SkillDefinition skill) {
+        if (skill.style() == null) return true;
+        double playerMastery = 0.0D;
+        if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.FIST) playerMastery = ClientPlayerData.getFightingMastery();
+        else if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.SWORD) playerMastery = ClientPlayerData.getSwordMastery();
+        else if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.KICK) playerMastery = ClientPlayerData.getKickMastery();
+        else if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.SNIPER) playerMastery = ClientPlayerData.getSniperMastery();
+        return playerMastery >= skill.requiredMastery();
+    }
+
+    private void drawLockedSlot(GuiGraphics graphics, int x, int y) {
+        graphics.fill(
+                x,
+                y,
+                x + SLOT_SIZE,
+                y + SLOT_SIZE,
+                0x50501010
+        );
+        drawBorder(
+                graphics,
+                x,
+                y,
+                SLOT_SIZE,
+                SLOT_SIZE,
+                0xFF903030
+        );
+    }
+
     private void drawLibrarySkill(
             GuiGraphics graphics,
             SkillDefinition skill,
@@ -374,34 +405,47 @@ public class KaizokuMenuScreen extends Screen {
                         SLOT_SIZE
                 );
 
-        drawSlot(
-                graphics,
-                x,
-                y,
-                hover
-        );
+        boolean unlocked = isSkillUnlocked(skill);
 
-        ItemStack icon =
-                skill.icon();
+        if (!unlocked) {
+            drawLockedSlot(graphics, x, y);
+            graphics.drawCenteredString(
+                    this.font,
+                    "M:" + (int)skill.requiredMastery(),
+                    x + SLOT_SIZE / 2,
+                    y + 10,
+                    0xFFF04040
+            );
+        } else {
+            drawSlot(
+                    graphics,
+                    x,
+                    y,
+                    hover
+            );
 
-        if (!icon.isEmpty()) {
+            ItemStack icon =
+                    skill.icon();
 
-            graphics.renderItem(
-                    icon,
-                    x + 5,
-                    y + 2
+            if (!icon.isEmpty()) {
+
+                graphics.renderItem(
+                        icon,
+                        x + 5,
+                        y + 2
+                );
+            }
+
+            graphics.drawCenteredString(
+                    this.font,
+                    getShortName(
+                            skill.name()
+                    ),
+                    x + SLOT_SIZE / 2,
+                    y + 17,
+                    0xFFFFFFFF
             );
         }
-
-        graphics.drawCenteredString(
-                this.font,
-                getShortName(
-                        skill.name()
-                ),
-                x + SLOT_SIZE / 2,
-                y + 17,
-                0xFFFFFFFF
-        );
     }
 
     private void drawEmptyLibrarySlot(
@@ -553,30 +597,13 @@ public class KaizokuMenuScreen extends Screen {
 
         int y =
                 panelTop
-                        + 30;
+                        + 18;
 
         long level =
                 ClientPlayerData.getLevel();
 
         long experience =
                 ClientPlayerData.getExperience();
-
-        double levelPower =
-                Math.sqrt(
-                        Math.max(
-                                1L,
-                                level
-                        )
-                );
-
-        double raceMultiplier =
-                ClientPlayerData
-                        .getRace()
-                        .getDamageMultiplier();
-
-        double finalPower =
-                levelPower
-                        * raceMultiplier;
 
         double stamina =
                 ClientStamina.getStamina();
@@ -589,7 +616,7 @@ public class KaizokuMenuScreen extends Screen {
 
         graphics.drawString(
                 this.font,
-                "KARAKTER",
+                "KARAKTER BİLGİLERİ",
                 x,
                 y,
                 0xFFFFD54A,
@@ -598,75 +625,112 @@ public class KaizokuMenuScreen extends Screen {
 
         graphics.drawString(
                 this.font,
-                "Level: " + level,
+                "Level: " + level + "  |  XP: " + experience,
                 x,
-                y + 24,
+                y + 16,
                 0xFFFFFFFF
         );
 
         graphics.drawString(
                 this.font,
-                "XP: " + experience,
+                "Race: " + ClientPlayerData.getRace().getDisplayName(),
                 x,
-                y + 43,
+                y + 28,
                 0xFFFFFFFF
         );
 
         graphics.drawString(
                 this.font,
-                "Race: "
-                        + ClientPlayerData
-                                .getRace()
-                                .getDisplayName(),
+                "Combat Style: " + ClientPlayerData.getCombatStyle(),
                 x,
-                y + 62,
+                y + 40,
                 0xFFFFFFFF
         );
 
+        // Stats section
         graphics.drawString(
                 this.font,
-                String.format(
-                        "Güç: ×%.2f",
-                        finalPower
-                ),
+                "Stat Points: " + ClientPlayerData.getStatPoints(),
                 x,
-                y + 81,
+                y + 56,
+                ClientPlayerData.getStatPoints() > 0 ? 0xFFFFD54A : 0xFFAAAAAA,
+                true
+        );
+
+        // Strength
+        graphics.drawString(
+                this.font,
+                "Güç (Strength): " + ClientPlayerData.getStrength(),
+                x,
+                y + 70,
+                0xFFFFFFFF
+        );
+        if (ClientPlayerData.getStatPoints() > 0) {
+            graphics.fill(x + 130, y + 68, x + 142, y + 80, 0xFF444444);
+            graphics.drawString(this.font, "+", x + 134, y + 69, 0xFFFFD54A);
+        }
+
+        // Defense
+        graphics.drawString(
+                this.font,
+                "Savunma (Defense): " + ClientPlayerData.getDefense(),
+                x,
+                y + 84,
+                0xFFFFFFFF
+        );
+        if (ClientPlayerData.getStatPoints() > 0) {
+            graphics.fill(x + 130, y + 82, x + 142, y + 94, 0xFF444444);
+            graphics.drawString(this.font, "+", x + 134, y + 83, 0xFFFFD54A);
+        }
+
+        // Mastery section
+        graphics.drawString(
+                this.font,
+                "USTALIKLAR (MASTERY)",
+                x,
+                y + 104,
                 0xFFFFD54A,
                 true
         );
 
         graphics.drawString(
                 this.font,
-                String.format(
-                        "Hasar: ×%.2f",
-                        raceMultiplier
-                ),
+                String.format("Sword Mastery: %.1f", ClientPlayerData.getSwordMastery()),
                 x,
-                y + 100,
+                y + 118,
                 0xFFAAAAAA
         );
 
         graphics.drawString(
                 this.font,
-                String.format(
-                        "Hız: ×%.2f",
-                        ClientPlayerData
-                                .getRace()
-                                .getSpeedMultiplier()
-                ),
+                String.format("Fighting Mastery: %.1f", ClientPlayerData.getFightingMastery()),
                 x,
-                y + 119,
+                y + 130,
                 0xFFAAAAAA
         );
 
-        /*
-         * STAMINA
-         */
+        graphics.drawString(
+                this.font,
+                String.format("Sniper Mastery: %.1f", ClientPlayerData.getSniperMastery()),
+                x,
+                y + 142,
+                0xFFAAAAAA
+        );
+
+        graphics.drawString(
+                this.font,
+                String.format("Kick Mastery: %.1f", ClientPlayerData.getKickMastery()),
+                x,
+                y + 154,
+                0xFFAAAAAA
+        );
+
+        // Stamina section
         graphics.drawString(
                 this.font,
                 "Stamina",
                 x,
-                y + 141,
+                y + 172,
                 0xFFFFD54A,
                 true
         );
@@ -679,21 +743,14 @@ public class KaizokuMenuScreen extends Screen {
                         maxStamina
                 ),
                 x + 58,
-                y + 141,
+                y + 172,
                 0xFFFFFFFF
         );
 
-        int barX =
-                x;
-
-        int barY =
-                y + 157;
-
-        int barWidth =
-                200;
-
-        int barHeight =
-                7;
+        int barX = x;
+        int barY = y + 184;
+        int barWidth = 200;
+        int barHeight = 7;
 
         graphics.fill(
                 barX,
@@ -703,14 +760,8 @@ public class KaizokuMenuScreen extends Screen {
                 0xFF303030
         );
 
-        int filled =
-                (int) (
-                        barWidth
-                                * staminaPercent
-                );
-
+        int filled = (int) (barWidth * staminaPercent);
         if (filled > 0) {
-
             graphics.fill(
                     barX,
                     barY,
@@ -722,17 +773,10 @@ public class KaizokuMenuScreen extends Screen {
 
         graphics.drawString(
                 this.font,
-                "Combat: "
-                        + (
-                        CombatState.isActive()
-                                ? "AKTİF"
-                                : "KAPALI"
-                ),
+                "Combat Mode: " + (CombatState.isActive() ? "AKTİF" : "KAPALI"),
                 x,
-                y + 178,
-                CombatState.isActive()
-                        ? 0xFF6CFF8A
-                        : 0xFFAAAAAA
+                y + 198,
+                CombatState.isActive() ? 0xFF6CFF8A : 0xFFAAAAAA
         );
     }
 
@@ -847,6 +891,23 @@ public class KaizokuMenuScreen extends Screen {
             return true;
         }
 
+        if (currentTab == Tab.STATS && button == 0) {
+            int x = panelLeft + SIDE_WIDTH + 14;
+            int y = panelTop + 18;
+            if (ClientPlayerData.getStatPoints() > 0) {
+                // Strength [+] at x + 130, y + 68
+                if (isInside(mouseX, mouseY, x + 130, y + 68, 12, 12)) {
+                    net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.mcreator.kaizokuocraft.network.AllocateStatPacket("STRENGTH"));
+                    return true;
+                }
+                // Defense [+] at x + 130, y + 82
+                if (isInside(mouseX, mouseY, x + 130, y + 82, 12, 12)) {
+                    net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.mcreator.kaizokuocraft.network.AllocateStatPacket("DEFENSE"));
+                    return true;
+                }
+            }
+        }
+
         if (
                 currentTab == Tab.SKILLS
                         && button == 0
@@ -857,23 +918,26 @@ public class KaizokuMenuScreen extends Screen {
                             + SIDE_WIDTH
                             + 14;
 
-            int index =
-                    0;
+            int libraryIndex = 0;
+            String activeStyle = ClientPlayerData.getCombatStyle();
 
             for (
                     SkillDefinition skill :
                     SkillRegistry.getSkills()
             ) {
+                if (skill.style() != null && !skill.style().name().equalsIgnoreCase(activeStyle)) {
+                    continue;
+                }
 
                 if (
-                        index >= 9
+                        libraryIndex >= 9
                 ) {
                     break;
                 }
 
                 int x =
                         left
-                                + index
+                                + libraryIndex
                                 * (
                                 SLOT_SIZE
                                         + SLOT_GAP
@@ -893,14 +957,13 @@ public class KaizokuMenuScreen extends Screen {
                                 SLOT_SIZE
                         )
                 ) {
-
-                    draggingSkill =
-                            index;
-
-                    return true;
+                    if (isSkillUnlocked(skill)) {
+                        draggingSkill = SkillRegistry.getSkills().indexOf(skill);
+                        return true;
+                    }
                 }
 
-                index++;
+                libraryIndex++;
             }
         }
 

@@ -31,25 +31,17 @@ public final class DamageEvents {
             return;
         }
 
-        double durability =
-                PowerManager.getDurabilityMultiplier(
-                        player
-                );
-
-        if (
-                durability <= 0.0D
-        ) {
-            return;
-        }
+        PlayerData data = PlayerDataManager.get(player);
+        double levelDefense = data.getLevel() * 0.2D;
+        double statDefense = data.getDefense() * 1.5D;
+        double raceDefenseMult = data.getRace().getDefenseMultiplier();
+        double totalDefense = (levelDefense + statDefense) * raceDefenseMult;
 
         /*
-         * Dayanıklılık arttıkça alınan hasar azalır.
+         * Diminishing returns formula: damage reduction = defense / (defense + 50)
          */
-        float finalDamage =
-                (float) (
-                        originalDamage
-                                / durability
-                );
+        double damageReduction = totalDefense / (totalDefense + 50.0D);
+        float finalDamage = (float) (originalDamage * (1.0D - damageReduction));
 
         event.setAmount(
                 Math.max(

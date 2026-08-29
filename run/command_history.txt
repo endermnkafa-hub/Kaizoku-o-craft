@@ -21,3 +21,10 @@
 /kaizoku_level set 1
 /time set day
 /kaizoku_level set 10
+/kaizoku_style sniper
+/kaizoku_level reset
+/kaizoku_style sword
+/kaizoku_style sniper
+/kaizoku_style fist
+/kaizoku_level set 10000000
+/data get entity @s PlayerCurrentAnimation

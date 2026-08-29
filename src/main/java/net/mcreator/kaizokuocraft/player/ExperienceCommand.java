@@ -118,17 +118,6 @@ public final class ExperienceCommand {
     }
 
     private static void sync(ServerPlayer player) {
-
-        PlayerData data =
-                PlayerDataManager.get(player);
-
-        PacketDistributor.sendToPlayer(
-                player,
-                new SyncPlayerDataPacket(
-                        data.getLevel(),
-                        data.getExperience(),
-                        data.getRace()
-                )
-        );
+        PlayerDataManager.sync(player);
     }
 }

@@ -133,6 +133,8 @@ public final class PlayerDataManager {
                             + 1L
             );
 
+            data.addStatPoints(5);
+
             levelChanged =
                     true;
         }
@@ -153,14 +155,7 @@ public final class PlayerDataManager {
         /*
          * Level / XP sync.
          */
-        PacketDistributor.sendToPlayer(
-                player,
-                new SyncPlayerDataPacket(
-                        data.getLevel(),
-                        data.getExperience(),
-                        data.getRace()
-                )
-        );
+        sync(player);
 
         /*
          * Max stamina değişmişse
@@ -174,5 +169,27 @@ public final class PlayerDataManager {
                     player
             );
         }
+    }
+
+    public static void sync(ServerPlayer player) {
+        PlayerData data = get(player);
+        PacketDistributor.sendToPlayer(
+                player,
+                new SyncPlayerDataPacket(
+                        data.getLevel(),
+                        data.getExperience(),
+                        data.getRace(),
+                        data.getCombatStyle(),
+                        data.getStatPoints(),
+                        data.getStrength(),
+                        data.getDefense(),
+                        data.getSwordMastery(),
+                        data.getFightingMastery(),
+                        data.getSniperMastery(),
+                        data.getKickMastery(),
+                        data.getHakiData(),
+                        data.getFruitData()
+                )
+        );
     }
 }

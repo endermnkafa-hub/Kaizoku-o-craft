@@ -48,6 +48,32 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
 
     /*
      * ==============================
+     * EXPANDED PLAYER STATS & DATA
+     * ==============================
+     */
+
+    private String combatStyle = "FIST";
+
+    private int statPoints = 0;
+
+    private int strength = 0;
+
+    private int defense = 0;
+
+    private double swordMastery = 0.0D;
+
+    private double fightingMastery = 0.0D;
+
+    private double sniperMastery = 0.0D;
+
+    private double kickMastery = 0.0D;
+
+    private CompoundTag hakiData = new CompoundTag();
+
+    private CompoundTag fruitData = new CompoundTag();
+
+    /*
+     * ==============================
      * LEVEL
      * ==============================
      */
@@ -224,6 +250,98 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
 
     /*
      * ==============================
+     * GETTERS & SETTERS FOR EXPANDED FIELDS
+     * ==============================
+     */
+
+    public String getCombatStyle() {
+        return combatStyle;
+    }
+
+    public void setCombatStyle(String combatStyle) {
+        this.combatStyle = combatStyle == null ? "FIST" : combatStyle;
+    }
+
+    public int getStatPoints() {
+        return statPoints;
+    }
+
+    public void setStatPoints(int statPoints) {
+        this.statPoints = Math.max(0, statPoints);
+    }
+
+    public void addStatPoints(int amount) {
+        if (amount > 0) {
+            this.statPoints += amount;
+        }
+    }
+
+    public int getStrength() {
+        return strength;
+    }
+
+    public void setStrength(int strength) {
+        this.strength = Math.max(0, strength);
+    }
+
+    public int getDefense() {
+        return defense;
+    }
+
+    public void setDefense(int defense) {
+        this.defense = Math.max(0, defense);
+    }
+
+    public double getSwordMastery() {
+        return swordMastery;
+    }
+
+    public void setSwordMastery(double swordMastery) {
+        this.swordMastery = Math.max(0.0D, swordMastery);
+    }
+
+    public double getFightingMastery() {
+        return fightingMastery;
+    }
+
+    public void setFightingMastery(double fightingMastery) {
+        this.fightingMastery = Math.max(0.0D, fightingMastery);
+    }
+
+    public double getSniperMastery() {
+        return sniperMastery;
+    }
+
+    public void setSniperMastery(double sniperMastery) {
+        this.sniperMastery = Math.max(0.0D, sniperMastery);
+    }
+
+    public double getKickMastery() {
+        return kickMastery;
+    }
+
+    public void setKickMastery(double kickMastery) {
+        this.kickMastery = Math.max(0.0D, kickMastery);
+    }
+
+    public CompoundTag getHakiData() {
+        return hakiData;
+    }
+
+    public void setHakiData(CompoundTag hakiData) {
+        this.hakiData = hakiData == null ? new CompoundTag() : hakiData;
+    }
+
+    public CompoundTag getFruitData() {
+        return fruitData;
+    }
+
+    public void setFruitData(CompoundTag fruitData) {
+        this.fruitData = fruitData == null ? new CompoundTag() : fruitData;
+    }
+
+    /*
+     * ==============================
      * SAVE
      * ==============================
      */
@@ -259,6 +377,56 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
         tag.putDouble(
                 "MaxStamina",
                 maxStamina
+        );
+
+        tag.putString(
+                "CombatStyle",
+                combatStyle
+        );
+
+        tag.putInt(
+                "StatPoints",
+                statPoints
+        );
+
+        tag.putInt(
+                "Strength",
+                strength
+        );
+
+        tag.putInt(
+                "Defense",
+                defense
+        );
+
+        tag.putDouble(
+                "SwordMastery",
+                swordMastery
+        );
+
+        tag.putDouble(
+                "FightingMastery",
+                fightingMastery
+        );
+
+        tag.putDouble(
+                "SniperMastery",
+                sniperMastery
+        );
+
+        tag.putDouble(
+                "KickMastery",
+                kickMastery
+        );
+
+        tag.put(
+                "HakiData",
+                hakiData
+        );
+
+        tag.put(
+                "FruitData",
+                fruitData
         );
 
         return tag;
@@ -348,5 +516,67 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
                         )
                 )
                         : maxStamina;
+
+        combatStyle =
+                tag.contains(
+                        "CombatStyle"
+                )
+                        ? tag.getString(
+                        "CombatStyle"
+                )
+                        : "FIST";
+
+        statPoints =
+                tag.getInt(
+                        "StatPoints"
+                );
+
+        strength =
+                tag.getInt(
+                        "Strength"
+                );
+
+        defense =
+                tag.getInt(
+                        "Defense"
+                );
+
+        swordMastery =
+                tag.getDouble(
+                        "SwordMastery"
+                );
+
+        fightingMastery =
+                tag.getDouble(
+                        "FightingMastery"
+                );
+
+        sniperMastery =
+                tag.getDouble(
+                        "SniperMastery"
+                );
+
+        kickMastery =
+                tag.getDouble(
+                        "KickMastery"
+                );
+
+        hakiData =
+                tag.contains(
+                        "HakiData"
+                )
+                        ? tag.getCompound(
+                        "HakiData"
+                )
+                        : new CompoundTag();
+
+        fruitData =
+                tag.contains(
+                        "FruitData"
+                )
+                        ? tag.getCompound(
+                        "FruitData"
+                )
+                        : new CompoundTag();
     }
 }
