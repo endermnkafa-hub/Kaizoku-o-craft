@@ -15,5 +15,9 @@ public final class ClientEventHandler {
         event.register(
                 CombatKeyMappings.TOGGLE_COMBAT
         );
+
+        event.register(
+                MenuKeyMappings.OPEN_MENU
+        );
     }
 }
