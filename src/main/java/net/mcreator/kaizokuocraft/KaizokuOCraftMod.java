@@ -23,12 +23,12 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
+import net.mcreator.kaizokuocraft.network.SkillUsePacket;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
 import net.mcreator.kaizokuocraft.client.CombatVanillaHud;
 import net.mcreator.kaizokuocraft.client.CombatHud;
 import net.mcreator.kaizokuocraft.client.ClientGameEventHandler;
 import net.mcreator.kaizokuocraft.client.ClientEventHandler;
-import net.mcreator.kaizokuocraft.network.SkillUsePacket;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
@@ -52,12 +52,7 @@ public class KaizokuOCraftMod {
 		NeoForge.EVENT_BUS.register(ExperienceEvents.class);
 		NeoForge.EVENT_BUS.register(DamageEvents.class);
 		addNetworkMessage(SyncPlayerDataPacket.TYPE, SyncPlayerDataPacket.STREAM_CODEC, SyncPlayerDataPacket::handle);
-
-		addNetworkMessage(
-        		SkillUsePacket.TYPE,
-        		SkillUsePacket.STREAM_CODEC,
-        		SkillUsePacket::handle
-		);
+		addNetworkMessage(SkillUsePacket.TYPE, SkillUsePacket.STREAM_CODEC, SkillUsePacket::handle);
 		/*
 		* CLIENT
 		*
