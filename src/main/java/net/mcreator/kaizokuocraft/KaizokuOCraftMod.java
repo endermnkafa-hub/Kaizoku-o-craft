@@ -9,12 +9,14 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.common.NeoForge;
+
 import net.neoforged.fml.util.thread.SidedThreadGroups;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
+
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.api.distmarker.Dist;
 
 import net.minecraft.server.TickTask;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -23,9 +25,11 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import net.mcreator.kaizokuocraft.player.*;
 import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
-import net.mcreator.kaizokuocraft.client.CombatVanillaHud;
+import net.mcreator.kaizokuocraft.client.KaizokuHud;
 import net.mcreator.kaizokuocraft.client.CombatHud;
+import net.mcreator.kaizokuocraft.client.CombatVanillaHud;
 import net.mcreator.kaizokuocraft.client.ClientEventHandler;
+import net.mcreator.kaizokuocraft.client.ClientGameEventHandler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Queue;
@@ -39,83 +43,225 @@ import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 
 @Mod("kaizoku_o_craft")
 public class KaizokuOCraftMod {
-	public static final Logger LOGGER = LogManager.getLogger(KaizokuOCraftMod.class);
-	public static final String MODID = "kaizoku_o_craft";
 
-	public KaizokuOCraftMod(IEventBus modEventBus) {
-		// Start of user code block mod constructor
-		ModAttachments.register(modEventBus);
-		NeoForge.EVENT_BUS.register(PlayerDataEvents.class);
-		NeoForge.EVENT_BUS.register(ExperienceEvents.class);
-		NeoForge.EVENT_BUS.register(DamageEvents.class);
-		addNetworkMessage(SyncPlayerDataPacket.TYPE, SyncPlayerDataPacket.STREAM_CODEC, SyncPlayerDataPacket::handle);
-		/*
-		* Client-only event registration.
-		*
-		* RegisterKeyMappingsEvent -> mod event bus
-		* ClientTickEvent          -> game event bus
-		* CombatHud                -> game event bus
-		* CombatVanillaHud         -> game event bus
-		*/
-		if (FMLEnvironment.dist == Dist.CLIENT) {
-			modEventBus.register(ClientEventHandler.class);
-			NeoForge.EVENT_BUS.register(ClientEventHandler.class);
-			NeoForge.EVENT_BUS.register(CombatHud.class);
-			NeoForge.EVENT_BUS.register(CombatVanillaHud.class);
-		}
-		// End of user code block mod constructor
-		NeoForge.EVENT_BUS.register(this);
-		modEventBus.addListener(this::registerNetworking);
-		// Start of user code block mod init
-		// End of user code block mod init
-	}
+    public static final Logger LOGGER =
+            LogManager.getLogger(KaizokuOCraftMod.class);
 
-	// Start of user code block mod methods
-	@SubscribeEvent
-	public void registerCommands(RegisterCommandsEvent event) {
-		ExperienceCommand.register(event.getDispatcher());
-		PowerCommand.register(event.getDispatcher());
-		RaceCommand.register(event.getDispatcher());
-		LevelCommand.register(event.getDispatcher());
-	}
+    public static final String MODID =
+            "kaizoku_o_craft";
 
-	// End of user code block mod methods
-	private static boolean networkingRegistered = false;
-	private static final Map<CustomPacketPayload.Type<?>, NetworkMessage<?>> MESSAGES = new HashMap<>();
+    public KaizokuOCraftMod(IEventBus modEventBus) {
 
-	private record NetworkMessage<T extends CustomPacketPayload>(StreamCodec<? extends FriendlyByteBuf, T> reader, IPayloadHandler<T> handler) {
-	}
+        // Start of user code block mod constructor
 
-	public static <T extends CustomPacketPayload> void addNetworkMessage(CustomPacketPayload.Type<T> id, StreamCodec<? extends FriendlyByteBuf, T> reader, IPayloadHandler<T> handler) {
-		if (networkingRegistered)
-			throw new IllegalStateException("Cannot register new network messages after networking has been registered");
-		MESSAGES.put(id, new NetworkMessage<>(reader, handler));
-	}
+        ModAttachments.register(modEventBus);
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	private void registerNetworking(final RegisterPayloadHandlersEvent event) {
-		final PayloadRegistrar registrar = event.registrar(MODID);
-		MESSAGES.forEach((id, networkMessage) -> registrar.playBidirectional(id, ((NetworkMessage) networkMessage).reader(), ((NetworkMessage) networkMessage).handler()));
-		networkingRegistered = true;
-	}
+        NeoForge.EVENT_BUS.register(
+                PlayerDataEvents.class
+        );
 
-	private static final Queue<IntObjectPair<Runnable>> workToBeScheduled = new ConcurrentLinkedQueue<>();
-	private static final PriorityQueue<TickTask> workQueue = new PriorityQueue<>(Comparator.comparingInt(TickTask::getTick));
+        NeoForge.EVENT_BUS.register(
+                ExperienceEvents.class
+        );
 
-	public static void queueServerWork(int delay, Runnable action) {
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER)
-			workToBeScheduled.add(new IntObjectImmutablePair<>(delay, action));
-	}
+        NeoForge.EVENT_BUS.register(
+                DamageEvents.class
+        );
 
-	@SubscribeEvent
-	public void tick(ServerTickEvent.Post event) {
-		int currentTick = event.getServer().getTickCount();
-		IntObjectPair<Runnable> work;
-		while ((work = workToBeScheduled.poll()) != null) {
-			workQueue.add(new TickTask(currentTick + work.leftInt(), work.right()));
-		}
-		while (!workQueue.isEmpty() && currentTick >= workQueue.peek().getTick()) {
-			workQueue.poll().run();
-		}
-	}
+        addNetworkMessage(
+                SyncPlayerDataPacket.TYPE,
+                SyncPlayerDataPacket.STREAM_CODEC,
+                SyncPlayerDataPacket::handle
+        );
+
+        /*
+         * CLIENT
+         *
+         * RegisterKeyMappingsEvent:
+         * MOD EVENT BUS
+         *
+         * ClientTickEvent:
+         * GAME EVENT BUS
+         *
+         * HUD:
+         * GAME EVENT BUS
+         */
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+
+            modEventBus.register(
+                    ClientEventHandler.class
+            );
+
+            NeoForge.EVENT_BUS.register(
+                    ClientGameEventHandler.class
+            );
+
+            NeoForge.EVENT_BUS.register(
+                    KaizokuHud.class
+            );
+
+            NeoForge.EVENT_BUS.register(
+                    CombatHud.class
+            );
+
+            NeoForge.EVENT_BUS.register(
+                    CombatVanillaHud.class
+            );
+        }
+
+        // End of user code block mod constructor
+
+        NeoForge.EVENT_BUS.register(this);
+
+        modEventBus.addListener(
+                this::registerNetworking
+        );
+
+        // Start of user code block mod init
+        // End of user code block mod init
+    }
+
+    // Start of user code block mod methods
+
+    @SubscribeEvent
+    public void registerCommands(
+            RegisterCommandsEvent event
+    ) {
+        ExperienceCommand.register(
+                event.getDispatcher()
+        );
+
+        PowerCommand.register(
+                event.getDispatcher()
+        );
+
+        RaceCommand.register(
+                event.getDispatcher()
+        );
+
+        LevelCommand.register(
+                event.getDispatcher()
+        );
+    }
+
+    // End of user code block mod methods
+
+    private static boolean networkingRegistered = false;
+
+    private static final Map<
+            CustomPacketPayload.Type<?>,
+            NetworkMessage<?>
+            > MESSAGES = new HashMap<>();
+
+    private record NetworkMessage<
+            T extends CustomPacketPayload
+            >(
+            StreamCodec<? extends FriendlyByteBuf, T> reader,
+            IPayloadHandler<T> handler
+    ) {
+    }
+
+    public static <T extends CustomPacketPayload> void addNetworkMessage(
+            CustomPacketPayload.Type<T> id,
+            StreamCodec<? extends FriendlyByteBuf, T> reader,
+            IPayloadHandler<T> handler
+    ) {
+        if (networkingRegistered) {
+            throw new IllegalStateException(
+                    "Cannot register new network messages after networking has been registered"
+            );
+        }
+
+        MESSAGES.put(
+                id,
+                new NetworkMessage<>(
+                        reader,
+                        handler
+                )
+        );
+    }
+
+    @SuppressWarnings({
+            "rawtypes",
+            "unchecked"
+    })
+    private void registerNetworking(
+            final RegisterPayloadHandlersEvent event
+    ) {
+        final PayloadRegistrar registrar =
+                event.registrar(MODID);
+
+        MESSAGES.forEach(
+                (
+                        id,
+                        networkMessage
+                ) ->
+                        registrar.playBidirectional(
+                                id,
+                                ((NetworkMessage) networkMessage)
+                                        .reader(),
+                                ((NetworkMessage) networkMessage)
+                                        .handler()
+                        )
+        );
+
+        networkingRegistered = true;
+    }
+
+    private static final Queue<
+            IntObjectPair<Runnable>
+            > workToBeScheduled =
+            new ConcurrentLinkedQueue<>();
+
+    private static final PriorityQueue<TickTask> workQueue =
+            new PriorityQueue<>(
+                    Comparator.comparingInt(
+                            TickTask::getTick
+                    )
+            );
+
+    public static void queueServerWork(
+            int delay,
+            Runnable action
+    ) {
+        if (
+                Thread.currentThread().getThreadGroup()
+                        == SidedThreadGroups.SERVER
+        ) {
+            workToBeScheduled.add(
+                    new IntObjectImmutablePair<>(
+                            delay,
+                            action
+                    )
+            );
+        }
+    }
+
+    @SubscribeEvent
+    public void tick(
+            ServerTickEvent.Post event
+    ) {
+        int currentTick =
+                event.getServer().getTickCount();
+
+        IntObjectPair<Runnable> work;
+
+        while (
+                (work = workToBeScheduled.poll()) != null
+        ) {
+            workQueue.add(
+                    new TickTask(
+                            currentTick + work.leftInt(),
+                            work.right()
+                    )
+            );
+        }
+
+        while (
+                !workQueue.isEmpty()
+                        && currentTick >= workQueue.peek().getTick()
+        ) {
+            workQueue.poll().run();
+        }
+    }
 }
