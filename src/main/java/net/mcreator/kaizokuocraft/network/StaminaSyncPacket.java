@@ -1,74 +1,178 @@
-package net.mcreator.kaizokuocraft.network;
+package net.mcreator.kaizokuocraft.player;
 
-import net.mcreator.kaizokuocraft.KaizokuOCraftMod;
-import net.mcreator.kaizokuocraft.client.ClientStamina;
+import net.mcreator.kaizokuocraft.network.StaminaSyncPacket;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-public record StaminaSyncPacket(
-        double stamina,
-        double maxStamina
-) implements CustomPacketPayload {
+public final class StaminaManager {
 
-    public static final Type<StaminaSyncPacket> TYPE =
-            new Type<>(
-                    ResourceLocation.fromNamespaceAndPath(
-                            KaizokuOCraftMod.MODID,
-                            "sync_stamina"
-                    )
-            );
+    public static final double BASE_MAX_STAMINA =
+            100.0D;
 
-    public static final StreamCodec<
-            FriendlyByteBuf,
-            StaminaSyncPacket
-            > STREAM_CODEC =
-            StreamCodec.of(
-                    (buf, packet) -> {
+    public static final double STAMINA_PER_LEVEL =
+            2.0D;
 
-                        buf.writeDouble(
-                                packet.stamina()
-                        );
+    public static final double REGEN_PER_TICK =
+            0.20D;
 
-                        buf.writeDouble(
-                                packet.maxStamina()
-                        );
-                    },
-                    buf ->
-                            new StaminaSyncPacket(
-                                    buf.readDouble(),
-                                    buf.readDouble()
-                            )
-            );
+    private static final int SYNC_INTERVAL =
+            5;
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    private StaminaManager() {
     }
 
-    public static void handle(
-            StaminaSyncPacket packet,
-            IPayloadContext context
+    public static double getMaxStaminaForLevel(
+            long level
     ) {
 
-        if (
-                context.flow()
-                        != PacketFlow.CLIENTBOUND
-        ) {
-            return;
+        if (level < 1L) {
+            level = 1L;
         }
 
-        context.enqueueWork(
-                () ->
-                        ClientStamina.set(
-                                packet.stamina(),
-                                packet.maxStamina()
-                        )
+        return BASE_MAX_STAMINA
+                + (
+                Math.max(
+                        0L,
+                        level - 1L
+                )
+                * STAMINA_PER_LEVEL
+        );
+    }
+
+    public static void updateMaxStamina(
+            ServerPlayer player
+    ) {
+
+        PlayerData data =
+                PlayerDataManager.get(
+                        player
+                );
+
+        double targetMax =
+                getMaxStaminaForLevel(
+                        data.getLevel()
+                );
+
+        data.setMaxStamina(
+                targetMax
+        );
+
+        if (
+                data.getStamina() <= 0.0D
+                        && data.getLevel() == 1L
+        ) {
+            data.setStamina(
+                    targetMax
+            );
+        }
+    }
+
+    public static boolean consume(
+            ServerPlayer player,
+            double amount
+    ) {
+
+        if (amount <= 0.0D) {
+            return true;
+        }
+
+        PlayerData data =
+                PlayerDataManager.get(
+                        player
+                );
+
+        updateMaxStamina(
+                player
+        );
+
+        if (
+                data.getStamina()
+                        < amount
+        ) {
+            return false;
+        }
+
+        data.setStamina(
+                data.getStamina()
+                        - amount
+        );
+
+        sync(player);
+
+        return true;
+    }
+
+    public static void regenerate(
+            ServerPlayer player
+    ) {
+
+        PlayerData data =
+                PlayerDataManager.get(
+                        player
+                );
+
+        updateMaxStamina(
+                player
+        );
+
+        if (
+                data.getStamina()
+                        < data.getMaxStamina()
+        ) {
+
+            data.addStamina(
+                    REGEN_PER_TICK
+            );
+        }
+    }
+
+    public static void tickServer(
+            MinecraftServer server
+    ) {
+
+        int tick =
+                server.getTickCount();
+
+        for (
+                ServerPlayer player :
+                server.getPlayerList()
+                        .getPlayers()
+        ) {
+
+            regenerate(
+                    player
+            );
+
+            if (
+                    tick % SYNC_INTERVAL
+                            == 0
+            ) {
+
+                sync(
+                        player
+                );
+            }
+        }
+    }
+
+    public static void sync(
+            ServerPlayer player
+    ) {
+
+        PlayerData data =
+                PlayerDataManager.get(
+                        player
+                );
+
+        PacketDistributor.sendToPlayer(
+                player,
+                new StaminaSyncPacket(
+                        data.getStamina(),
+                        data.getMaxStamina()
+                )
         );
     }
 }
