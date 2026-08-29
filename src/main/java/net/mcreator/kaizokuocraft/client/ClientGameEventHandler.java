@@ -1,7 +1,6 @@
 package net.mcreator.kaizokuocraft.client;
 
 import net.mcreator.kaizokuocraft.network.SkillUsePacket;
-import net.mcreator.kaizokuocraft.player.SkillManager;
 
 import net.minecraft.client.Minecraft;
 
@@ -48,13 +47,9 @@ public final class ClientGameEventHandler {
         if (
                 minecraft.player == null
         ) {
-
             return;
         }
 
-        /*
-         * K = Combat
-         */
         while (
                 CombatKeyMappings.TOGGLE_COMBAT
                         .consumeClick()
@@ -63,9 +58,6 @@ public final class ClientGameEventHandler {
             CombatState.toggle();
         }
 
-        /*
-         * M = Menü
-         */
         while (
                 MenuKeyMappings.OPEN_MENU
                         .consumeClick()
@@ -91,8 +83,8 @@ public final class ClientGameEventHandler {
         }
 
         /*
-         * Combat aktif değilse
-         * skill inputlarını temizle.
+         * Menü açıksa combat tuşlarını
+         * kullanma.
          */
         if (
                 minecraft.screen != null
@@ -100,7 +92,6 @@ public final class ClientGameEventHandler {
         ) {
 
             resetKeyStates();
-
             return;
         }
 
@@ -109,16 +100,13 @@ public final class ClientGameEventHandler {
                         .getWindow();
 
         /*
-         * ====================================
-         * DASH
-         * ====================================
+         * R = Dash
          */
         boolean dashDown =
                 GLFW.glfwGetKey(
                         window,
                         DASH_KEY
-                )
-                        == GLFW.GLFW_PRESS;
+                ) == GLFW.GLFW_PRESS;
 
         if (
                 dashDown
@@ -130,45 +118,25 @@ public final class ClientGameEventHandler {
 
             if (
                     level
-                            >= SkillManagerClient
-                            .getDashUnlockLevel()
+                            >= SkillManagerClient.getDashUnlockLevel()
             ) {
 
                 if (
-                        !SkillCooldownClient
-                                .isOnCooldown(
-                                        "dash"
-                                )
+                        !SkillCooldownClient.isOnCooldown(
+                                "dash"
+                        )
                 ) {
 
-                    double staminaCost =
-                            SkillManager
-                                    .getSkillStaminaCost(
-                                            "dash"
-                                    );
+                    PacketDistributor.sendToServer(
+                            new SkillUsePacket(
+                                    "dash"
+                            )
+                    );
 
-                    /*
-                     * STAMINA YETERLİ Mİ?
-                     */
-                    if (
-                            ClientStamina.getStamina()
-                                    >= staminaCost
-                    ) {
-
-                        PacketDistributor
-                                .sendToServer(
-                                        new SkillUsePacket(
-                                                "dash"
-                                        )
-                                );
-
-                        SkillCooldownClient.start(
-                                "dash",
-                                SkillManager.getCooldown(
-                                        "dash"
-                                )
-                        );
-                    }
+                    SkillCooldownClient.start(
+                            "dash",
+                            1000L
+                    );
                 }
             }
         }
@@ -177,9 +145,7 @@ public final class ClientGameEventHandler {
                 dashDown;
 
         /*
-         * ====================================
-         * 9 SKILL
-         * ====================================
+         * Normal 9 skill slotu
          */
         for (
                 int slot = 0;
@@ -191,9 +157,11 @@ public final class ClientGameEventHandler {
                     GLFW.glfwGetKey(
                             window,
                             SKILL_KEYS[slot]
-                    )
-                            == GLFW.GLFW_PRESS;
+                    ) == GLFW.GLFW_PRESS;
 
+            /*
+             * Sadece tuşa yeni basıldığında çalıştır.
+             */
             if (
                     down
                             && !KEY_WAS_DOWN[slot]
@@ -205,77 +173,33 @@ public final class ClientGameEventHandler {
                         );
 
                 if (
-                        skillId == null
-                                || SkillCooldownClient
-                                .isOnCooldown(
-                                        skillId
-                                )
-                ) {
-
-                    KEY_WAS_DOWN[slot] =
-                            down;
-
-                    continue;
-                }
-
-                SkillDefinition skill =
-                        SkillRegistry.getSkill(
+                        skillId != null
+                                && !SkillCooldownClient.isOnCooldown(
                                 skillId
-                        );
-
-                if (
-                        skill == null
+                        )
                 ) {
 
-                    KEY_WAS_DOWN[slot] =
-                            down;
+                    SkillDefinition skill =
+                            SkillRegistry.getSkill(
+                                    skillId
+                            );
 
-                    continue;
-                }
+                    if (
+                            skill != null
+                    ) {
 
-                /*
-                 * Skill stamina maliyeti.
-                 */
-                double staminaCost =
-                        SkillManager
-                                .getSkillStaminaCost(
-                                        skillId
-                                );
-
-                /*
-                 * STAMINA YETMİYORSA:
-                 *
-                 * packet YOK
-                 * cooldown YOK
-                 */
-                if (
-                        ClientStamina.getStamina()
-                                < staminaCost
-                ) {
-
-                    KEY_WAS_DOWN[slot] =
-                            down;
-
-                    continue;
-                }
-
-                /*
-                 * Server'a gönder.
-                 */
-                PacketDistributor
-                        .sendToServer(
+                        PacketDistributor.sendToServer(
                                 new SkillUsePacket(
                                         skillId
                                 )
                         );
 
-                /*
-                 * Client cooldown.
-                 */
-                SkillCooldownClient.start(
-                        skillId,
-                        skill.cooldownMillis()
-                );
+                        SkillCooldownClient.start(
+                                skillId,
+                                skill.cooldownMillis()
+                        );
+                    }
+                }
             }
 
             KEY_WAS_DOWN[slot] =

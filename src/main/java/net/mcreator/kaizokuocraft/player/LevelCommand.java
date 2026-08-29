@@ -20,165 +20,76 @@ public final class LevelCommand {
     public static void register(
             CommandDispatcher<CommandSourceStack> dispatcher
     ) {
-
         dispatcher.register(
-                Commands.literal(
-                        "kaizoku_level"
-                )
-                        .requires(
-                                source ->
-                                        source.hasPermission(2)
-                        )
-
+                Commands.literal("kaizoku_level")
+                        .requires(source -> source.hasPermission(2))
                         .then(
-                                Commands.literal(
-                                        "set"
-                                )
+                                Commands.literal("set")
                                         .then(
                                                 Commands.argument(
                                                         "level",
-                                                        LongArgumentType.longArg(
-                                                                1
-                                                        )
+                                                        LongArgumentType.longArg(1)
                                                 )
-                                                        .executes(
-                                                                context -> {
-
-                                                                    ServerPlayer player =
-                                                                            context.getSource()
-                                                                                    .getPlayerOrException();
-
-                                                                    long level =
-                                                                            LongArgumentType.getLong(
-                                                                                    context,
-                                                                                    "level"
-                                                                            );
-
-                                                                    PlayerData data =
-                                                                            PlayerDataManager.get(
-                                                                                    player
-                                                                            );
-
-                                                                    data.setLevel(
-                                                                            level
-                                                                    );
-
-                                                                    /*
-                                                                     * Level değiştiği için
-                                                                     * max stamina da hemen
-                                                                     * yeni level'a göre
-                                                                     * hesaplanır.
-                                                                     */
-                                                                    StaminaManager.updateMaxStamina(
-                                                                            player
-                                                                    );
-
-                                                                    /*
-                                                                     * Player data sync
-                                                                     */
-                                                                    sync(
-                                                                            player
-                                                                    );
-
-                                                                    /*
-                                                                     * Stamina sync
-                                                                     */
-                                                                    StaminaManager.sync(
-                                                                            player
-                                                                    );
-
+                                                        .executes(context -> {
+                                                            ServerPlayer player =
                                                                     context.getSource()
-                                                                            .sendSuccess(
-                                                                                    () ->
-                                                                                            Component.literal(
-                                                                                                    "§6Kaizoku-ō Craft §7| §fLevel: §e"
-                                                                                                            + level
-                                                                                            ),
-                                                                                    true
-                                                                            );
+                                                                            .getPlayerOrException();
 
-                                                                    return 1;
-                                                                }
-                                                        )
-                                        )
-                        )
+                                                            long level =
+                                                                    LongArgumentType.getLong(
+                                                                            context,
+                                                                            "level"
+                                                                    );
 
-                        .then(
-                                Commands.literal(
-                                        "reset"
-                                )
-                                        .executes(
-                                                context -> {
+                                                            PlayerData data =
+                                                                    PlayerDataManager.get(player);
 
-                                                    ServerPlayer player =
-                                                            context.getSource()
-                                                                    .getPlayerOrException();
+                                                            data.setLevel(level);
 
-                                                    PlayerData data =
-                                                            PlayerDataManager.get(
-                                                                    player
-                                                            );
+                                                            sync(player);
 
-                                                    data.setLevel(
-                                                            1L
-                                                    );
-
-                                                    data.setExperience(
-                                                            0L
-                                                    );
-
-                                                    /*
-                                                     * Level 1 max stamina.
-                                                     */
-                                                    StaminaManager.updateMaxStamina(
-                                                            player
-                                                    );
-
-                                                    /*
-                                                     * Reset sonrası full stamina.
-                                                     */
-                                                    data.setStamina(
-                                                            data.getMaxStamina()
-                                                    );
-
-                                                    /*
-                                                     * Player data sync
-                                                     */
-                                                    sync(
-                                                            player
-                                                    );
-
-                                                    /*
-                                                     * Stamina sync
-                                                     */
-                                                    StaminaManager.sync(
-                                                            player
-                                                    );
-
-                                                    context.getSource()
-                                                            .sendSuccess(
-                                                                    () ->
-                                                                            Component.literal(
-                                                                                    "§6Kaizoku-ō Craft §7| §fLevel ve XP sıfırlandı."
-                                                                            ),
+                                                            context.getSource().sendSuccess(
+                                                                    () -> Component.literal(
+                                                                            "§6Kaizoku-ō Craft §7| §fLevel: §e"
+                                                                                    + level
+                                                                    ),
                                                                     true
                                                             );
 
-                                                    return 1;
-                                                }
+                                                            return 1;
+                                                        })
                                         )
+                        )
+                        .then(
+                                Commands.literal("reset")
+                                        .executes(context -> {
+                                            ServerPlayer player =
+                                                    context.getSource()
+                                                            .getPlayerOrException();
+
+                                            PlayerData data =
+                                                    PlayerDataManager.get(player);
+
+                                            data.setLevel(1L);
+                                            data.setExperience(0L);
+
+                                            sync(player);
+
+                                            context.getSource().sendSuccess(
+                                                    () -> Component.literal(
+                                                            "§6Kaizoku-ō Craft §7| §fLevel ve XP sıfırlandı."
+                                                    ),
+                                                    true
+                                            );
+
+                                            return 1;
+                                        })
                         )
         );
     }
 
-    private static void sync(
-            ServerPlayer player
-    ) {
-
-        PlayerData data =
-                PlayerDataManager.get(
-                        player
-                );
+    private static void sync(ServerPlayer player) {
+        PlayerData data = PlayerDataManager.get(player);
 
         PacketDistributor.sendToPlayer(
                 player,
