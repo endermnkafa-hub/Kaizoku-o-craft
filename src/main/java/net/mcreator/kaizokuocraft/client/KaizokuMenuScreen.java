@@ -33,7 +33,7 @@ public class KaizokuMenuScreen extends Screen {
 
     @Override
     protected void init() {
-        // Tamamen custom GUI.
+        // Custom GUI
     }
 
     @Override
@@ -44,10 +44,6 @@ public class KaizokuMenuScreen extends Screen {
             float partialTick
     ) {
 
-        /*
-         * BLUR YOK.
-         * Sadece ekranı hafif karartıyoruz.
-         */
         graphics.fill(
                 0,
                 0,
@@ -62,9 +58,6 @@ public class KaizokuMenuScreen extends Screen {
         int panelTop =
                 (this.height - PANEL_HEIGHT) / 2;
 
-        /*
-         * ANA PANEL
-         */
         graphics.fill(
                 panelLeft,
                 panelTop,
@@ -82,9 +75,6 @@ public class KaizokuMenuScreen extends Screen {
                 0xFF666666
         );
 
-        /*
-         * SOL MENÜ
-         */
         graphics.fill(
                 panelLeft,
                 panelTop,
@@ -101,9 +91,6 @@ public class KaizokuMenuScreen extends Screen {
                 0xFF444444
         );
 
-        /*
-         * BAŞLIK
-         */
         graphics.drawCenteredString(
                 this.font,
                 "KAIzoku-Ō",
@@ -112,9 +99,6 @@ public class KaizokuMenuScreen extends Screen {
                 0xFFFFFFFF
         );
 
-        /*
-         * SEKME YAZILARI
-         */
         drawTab(
                 graphics,
                 panelLeft,
@@ -133,9 +117,6 @@ public class KaizokuMenuScreen extends Screen {
                 76
         );
 
-        /*
-         * SAYFALAR
-         */
         if (currentTab == Tab.SKILLS) {
 
             renderSkills(
@@ -155,9 +136,6 @@ public class KaizokuMenuScreen extends Screen {
             );
         }
 
-        /*
-         * SÜRÜKLENEN SKILL
-         */
         if (draggingSkill != -1) {
 
             drawDraggedSkill(
@@ -232,9 +210,6 @@ public class KaizokuMenuScreen extends Screen {
         int left =
                 panelLeft + SIDE_WIDTH + 14;
 
-        /*
-         * ÜST BAŞLIK
-         */
         graphics.drawString(
                 this.font,
                 "SKİLLER",
@@ -245,31 +220,62 @@ public class KaizokuMenuScreen extends Screen {
         );
 
         /*
-         * Kullanılabilir skilller
+         * ÜSTTEKİ KÜTÜPHANE:
+         * Bütün kayıtlı skilller burada gösterilir.
          */
-        for (int slot = 0; slot < 9; slot++) {
+        int libraryIndex = 0;
+
+        for (
+                SkillDefinition skill :
+                SkillRegistry.getSkills()
+        ) {
+
+            if (libraryIndex >= 9) {
+                break;
+            }
 
             int x =
                     left
-                            + slot
+                            + libraryIndex
                             * (SLOT_SIZE + SLOT_GAP);
 
             int y =
                     panelTop + SKILL_TOP_Y;
 
-            drawLibrarySlot(
+            drawLibrarySkill(
                     graphics,
-                    slot,
+                    skill,
                     x,
                     y,
                     mouseX,
                     mouseY
             );
+
+            libraryIndex++;
         }
 
         /*
-         * COMBAT BAR
+         * Eksik kutuları boş göster.
          */
+        while (libraryIndex < 9) {
+
+            int x =
+                    left
+                            + libraryIndex
+                            * (SLOT_SIZE + SLOT_GAP);
+
+            int y =
+                    panelTop + SKILL_TOP_Y;
+
+            drawEmptyLibrarySlot(
+                    graphics,
+                    x,
+                    y
+            );
+
+            libraryIndex++;
+        }
+
         graphics.drawString(
                 this.font,
                 "COMBAT BAR",
@@ -279,6 +285,9 @@ public class KaizokuMenuScreen extends Screen {
                 true
         );
 
+        /*
+         * ALTTAKİ 9 COMBAT SLOTU
+         */
         for (int slot = 0; slot < 9; slot++) {
 
             int x =
@@ -299,21 +308,18 @@ public class KaizokuMenuScreen extends Screen {
             );
         }
 
-        /*
-         * Alt açıklama
-         */
         graphics.drawString(
                 this.font,
-                "Sürükle → bırak",
+                "Skill'i sürükleyip Combat Bar'a bırak.",
                 left,
                 panelTop + 184,
                 0xFF777777
         );
     }
 
-    private void drawLibrarySlot(
+    private void drawLibrarySkill(
             GuiGraphics graphics,
-            int slot,
+            SkillDefinition skill,
             int x,
             int y,
             int mouseX,
@@ -337,11 +343,8 @@ public class KaizokuMenuScreen extends Screen {
                 hover
         );
 
-        String name =
-                getLibrarySkillName(slot);
-
         ItemStack icon =
-                getLibrarySkillIcon(slot);
+                skill.icon();
 
         if (!icon.isEmpty()) {
 
@@ -350,27 +353,39 @@ public class KaizokuMenuScreen extends Screen {
                     x + 5,
                     y + 2
             );
-        } else {
-
-            graphics.drawCenteredString(
-                    this.font,
-                    "?",
-                    x + SLOT_SIZE / 2,
-                    y + 8,
-                    0xFF555555
-            );
         }
 
-        if (!name.equals("Empty")) {
+        graphics.drawCenteredString(
+                this.font,
+                getShortName(
+                        skill.name()
+                ),
+                x + SLOT_SIZE / 2,
+                y + 17,
+                0xFFFFFFFF
+        );
+    }
 
-            graphics.drawCenteredString(
-                    this.font,
-                    name,
-                    x + SLOT_SIZE / 2,
-                    y + 17,
-                    0xFFFFFFFF
-            );
-        }
+    private void drawEmptyLibrarySlot(
+            GuiGraphics graphics,
+            int x,
+            int y
+    ) {
+
+        drawSlot(
+                graphics,
+                x,
+                y,
+                false
+        );
+
+        graphics.drawCenteredString(
+                this.font,
+                "?",
+                x + SLOT_SIZE / 2,
+                y + 8,
+                0xFF555555
+        );
     }
 
     private void drawCombatSlot(
@@ -399,19 +414,32 @@ public class KaizokuMenuScreen extends Screen {
                 hover
         );
 
-        String name =
-                SkillLoadout.getSkillName(slot);
+        SkillDefinition skill =
+                SkillLoadout.getSkill(
+                        slot
+                );
 
-        ItemStack icon =
-                SkillLoadout.getSkillIcon(slot);
+        if (skill != null) {
 
-        if (!icon.isEmpty()) {
+            if (!skill.icon().isEmpty()) {
 
-            graphics.renderItem(
-                    icon,
-                    x + 5,
-                    y + 2
+                graphics.renderItem(
+                        skill.icon(),
+                        x + 5,
+                        y + 2
+                );
+            }
+
+            graphics.drawCenteredString(
+                    this.font,
+                    getShortName(
+                            skill.name()
+                    ),
+                    x + SLOT_SIZE / 2,
+                    y + 17,
+                    0xFFFFFFFF
             );
+
         } else {
 
             graphics.drawCenteredString(
@@ -423,9 +451,6 @@ public class KaizokuMenuScreen extends Screen {
             );
         }
 
-        /*
-         * Tuş
-         */
         graphics.drawString(
                 this.font,
                 SkillLoadout.getSkillKey(slot),
@@ -433,26 +458,6 @@ public class KaizokuMenuScreen extends Screen {
                 y + 2,
                 0xFFFFD54A
         );
-
-        /*
-         * İsim uzun olduğu için
-         * sadece dolu slotlarda küçük yazı.
-         */
-        if (!name.equals("Empty")) {
-
-            String shortName =
-                    name.length() > 4
-                            ? name.substring(0, 4)
-                            : name;
-
-            graphics.drawCenteredString(
-                    this.font,
-                    shortName,
-                    x + SLOT_SIZE / 2,
-                    y + 17,
-                    0xFFFFFFFF
-            );
-        }
     }
 
     private void drawSlot(
@@ -510,18 +515,6 @@ public class KaizokuMenuScreen extends Screen {
         long experience =
                 ClientPlayerData.getExperience();
 
-        long requiredXP =
-                getRequiredExperience(level);
-
-        double progress =
-                requiredXP <= 0
-                        ? 0.0D
-                        : Math.min(
-                                1.0D,
-                                (double) experience
-                                        / (double) requiredXP
-                        );
-
         double levelPower =
                 Math.sqrt(
                         Math.max(
@@ -530,17 +523,15 @@ public class KaizokuMenuScreen extends Screen {
                         )
                 );
 
-        double racePower =
+        double raceMultiplier =
                 ClientPlayerData
                         .getRace()
                         .getDamageMultiplier();
 
         double finalPower =
-                levelPower * racePower;
+                levelPower
+                        * raceMultiplier;
 
-        /*
-         * Başlık
-         */
         graphics.drawString(
                 this.font,
                 "KARAKTER",
@@ -550,250 +541,83 @@ public class KaizokuMenuScreen extends Screen {
                 true
         );
 
-        /*
-         * LEVEL
-         */
         graphics.drawString(
                 this.font,
-                "Level",
+                "Level: " + level,
                 x,
-                y + 28,
-                0xFFAAAAAA
-        );
-
-        graphics.drawString(
-                this.font,
-                String.valueOf(level),
-                x + 55,
-                y + 28,
-                0xFFFFFFFF,
-                true
-        );
-
-        /*
-         * XP
-         */
-        graphics.drawString(
-                this.font,
-                "XP",
-                x,
-                y + 47,
-                0xFFAAAAAA
-        );
-
-        graphics.drawString(
-                this.font,
-                experience
-                        + " / "
-                        + requiredXP,
-                x + 55,
-                y + 47,
+                y + 26,
                 0xFFFFFFFF
         );
 
-        /*
-         * XP BAR
-         */
-        int barX =
-                x;
-
-        int barY =
-                y + 64;
-
-        int barWidth =
-                200;
-
-        int barHeight =
-                8;
-
-        graphics.fill(
-                barX,
-                barY,
-                barX + barWidth,
-                barY + barHeight,
-                0xFF333333
-        );
-
-        int filled =
-                (int) (
-                        barWidth * progress
-                );
-
-        if (filled > 0) {
-
-            graphics.fill(
-                    barX,
-                    barY,
-                    barX + filled,
-                    barY + barHeight,
-                    0xFFFFD54A
-            );
-        }
-
-        /*
-         * RACE
-         */
         graphics.drawString(
                 this.font,
-                "Race",
+                "XP: " + experience,
                 x,
-                y + 92,
-                0xFFAAAAAA
+                y + 46,
+                0xFFFFFFFF
         );
 
         graphics.drawString(
                 this.font,
-                ClientPlayerData
-                        .getRace()
-                        .getDisplayName(),
-                x + 55,
-                y + 92,
-                0xFFFFFFFF,
-                true
-        );
-
-        /*
-         * GÜÇ
-         */
-        graphics.drawString(
-                this.font,
-                "Güç",
+                "Race: "
+                        + ClientPlayerData
+                                .getRace()
+                                .getDisplayName(),
                 x,
-                y + 112,
-                0xFFAAAAAA
+                y + 66,
+                0xFFFFFFFF
         );
 
         graphics.drawString(
                 this.font,
                 String.format(
-                        "×%.2f",
+                        "Güç: ×%.2f",
                         finalPower
                 ),
-                x + 55,
-                y + 112,
+                x,
+                y + 86,
                 0xFFFFD54A,
                 true
         );
 
-        /*
-         * Race bonusları
-         */
-        graphics.drawString(
-                this.font,
-                "Hasar:",
-                x,
-                y + 140,
-                0xFF888888
-        );
-
         graphics.drawString(
                 this.font,
                 String.format(
-                        "×%.2f",
-                        racePower
+                        "Hasar: ×%.2f",
+                        raceMultiplier
                 ),
-                x + 55,
-                y + 140,
-                0xFFFFFFFF
-        );
-
-        graphics.drawString(
-                this.font,
-                "Hız:",
-                x + 105,
-                y + 140,
-                0xFF888888
+                x,
+                y + 108,
+                0xFFAAAAAA
         );
 
         graphics.drawString(
                 this.font,
                 String.format(
-                        "×%.2f",
+                        "Hız: ×%.2f",
                         ClientPlayerData
                                 .getRace()
                                 .getSpeedMultiplier()
                 ),
-                x + 140,
-                y + 140,
-                0xFFFFFFFF
-        );
-
-        /*
-         * Combat durumu
-         */
-        graphics.drawString(
-                this.font,
-                "Combat:",
                 x,
-                y + 165,
-                0xFF888888
+                y + 128,
+                0xFFAAAAAA
         );
 
         graphics.drawString(
                 this.font,
-                CombatState.isActive()
-                        ? "AKTİF"
-                        : "KAPALI",
-                x + 55,
-                y + 165,
+                "Combat: "
+                        + (
+                        CombatState.isActive()
+                                ? "AKTİF"
+                                : "KAPALI"
+                ),
+                x,
+                y + 150,
                 CombatState.isActive()
                         ? 0xFF6CFF8A
-                        : 0xFFAAAAAA,
-                true
+                        : 0xFFAAAAAA
         );
-    }
-
-    private long getRequiredExperience(
-            long level
-    ) {
-
-        if (level < 1L) {
-            level = 1L;
-        }
-
-        double required =
-                100.0D
-                        * Math.pow(
-                                level,
-                                1.5D
-                        );
-
-        if (required >= Long.MAX_VALUE) {
-            return Long.MAX_VALUE;
-        }
-
-        return Math.max(
-                100L,
-                (long) required
-        );
-    }
-
-    private String getLibrarySkillName(
-            int slot
-    ) {
-
-        /*
-         * Şu anda sadece Punch mevcut.
-         */
-        if (slot == 0) {
-            return "Punch";
-        }
-
-        return "Empty";
-    }
-
-    private ItemStack getLibrarySkillIcon(
-            int slot
-    ) {
-
-        if (slot == 0) {
-
-            return new ItemStack(
-                    net.minecraft.world.item.Items.LEATHER
-            );
-        }
-
-        return ItemStack.EMPTY;
     }
 
     private void drawDraggedSkill(
@@ -802,19 +626,14 @@ public class KaizokuMenuScreen extends Screen {
             int mouseY
     ) {
 
-        if (draggingSkill == -1) {
+        SkillDefinition skill =
+                SkillRegistry.getSkill(
+                        draggingSkill
+                );
+
+        if (skill == null) {
             return;
         }
-
-        ItemStack icon =
-                getLibrarySkillIcon(
-                        draggingSkill
-                );
-
-        String name =
-                getLibrarySkillName(
-                        draggingSkill
-                );
 
         int x =
                 mouseX - SLOT_SIZE / 2;
@@ -839,10 +658,10 @@ public class KaizokuMenuScreen extends Screen {
                 0xFFFFD54A
         );
 
-        if (!icon.isEmpty()) {
+        if (!skill.icon().isEmpty()) {
 
             graphics.renderItem(
-                    icon,
+                    skill.icon(),
                     x + 5,
                     y + 2
             );
@@ -850,7 +669,9 @@ public class KaizokuMenuScreen extends Screen {
 
         graphics.drawCenteredString(
                 this.font,
-                name,
+                getShortName(
+                        skill.name()
+                ),
                 x + SLOT_SIZE / 2,
                 y + 17,
                 0xFFFFFFFF
@@ -870,9 +691,6 @@ public class KaizokuMenuScreen extends Screen {
         int panelTop =
                 (this.height - PANEL_HEIGHT) / 2;
 
-        /*
-         * SKILLS sekmesi
-         */
         if (
                 isInside(
                         mouseX,
@@ -888,9 +706,6 @@ public class KaizokuMenuScreen extends Screen {
             return true;
         }
 
-        /*
-         * STATS sekmesi
-         */
         if (
                 isInside(
                         mouseX,
@@ -906,95 +721,89 @@ public class KaizokuMenuScreen extends Screen {
             return true;
         }
 
-        /*
-         * Skills sayfası
-         */
         if (
-                currentTab != Tab.SKILLS
-                        || button != 0
+                currentTab == Tab.SKILLS
+                        && button == 0
         ) {
 
-            /*
-             * Sağ tıkla combat slotu temizleme
-             */
-            if (
-                    currentTab == Tab.SKILLS
-                            && button == 1
+            int left =
+                    panelLeft + SIDE_WIDTH + 14;
+
+            int index = 0;
+
+            for (
+                    SkillDefinition skill :
+                    SkillRegistry.getSkills()
             ) {
 
-                int left =
-                        panelLeft + SIDE_WIDTH + 14;
-
-                for (int slot = 0; slot < 9; slot++) {
-
-                    int x =
-                            left
-                                    + slot
-                                    * (SLOT_SIZE + SLOT_GAP);
-
-                    int y =
-                            panelTop + COMBAT_Y;
-
-                    if (
-                            isInside(
-                                    mouseX,
-                                    mouseY,
-                                    x,
-                                    y,
-                                    SLOT_SIZE,
-                                    SLOT_SIZE
-                            )
-                    ) {
-
-                        SkillLoadout.clearSlot(
-                                slot
-                        );
-
-                        return true;
-                    }
+                if (index >= 9) {
+                    break;
                 }
-            }
 
-            return super.mouseClicked(
-                    mouseX,
-                    mouseY,
-                    button
-            );
-        }
+                int x =
+                        left
+                                + index
+                                * (SLOT_SIZE + SLOT_GAP);
 
-        int left =
-                panelLeft + SIDE_WIDTH + 14;
-
-        /*
-         * Üstten skill seç
-         */
-        for (int slot = 0; slot < 9; slot++) {
-
-            int x =
-                    left
-                            + slot
-                            * (SLOT_SIZE + SLOT_GAP);
-
-            int y =
-                    panelTop + SKILL_TOP_Y;
-
-            if (
-                    isInside(
-                            mouseX,
-                            mouseY,
-                            x,
-                            y,
-                            SLOT_SIZE,
-                            SLOT_SIZE
-                    )
-            ) {
+                int y =
+                        panelTop + SKILL_TOP_Y;
 
                 if (
-                        !getLibrarySkillName(slot)
-                                .equals("Empty")
+                        isInside(
+                                mouseX,
+                                mouseY,
+                                x,
+                                y,
+                                SLOT_SIZE,
+                                SLOT_SIZE
+                        )
                 ) {
 
-                    draggingSkill = slot;
+                    draggingSkill = index;
+                    return true;
+                }
+
+                index++;
+            }
+        }
+
+        /*
+         * Sağ tık:
+         * Combat slotunu temizle.
+         */
+        if (
+                currentTab == Tab.SKILLS
+                        && button == 1
+        ) {
+
+            int left =
+                    panelLeft + SIDE_WIDTH + 14;
+
+            for (int slot = 0; slot < 9; slot++) {
+
+                int x =
+                        left
+                                + slot
+                                * (SLOT_SIZE + SLOT_GAP);
+
+                int y =
+                        panelTop + COMBAT_Y;
+
+                if (
+                        isInside(
+                                mouseX,
+                                mouseY,
+                                x,
+                                y,
+                                SLOT_SIZE,
+                                SLOT_SIZE
+                        )
+                ) {
+
+                    SkillLoadout.clearSlot(
+                            slot
+                    );
+
                     return true;
                 }
             }
@@ -1028,9 +837,6 @@ public class KaizokuMenuScreen extends Screen {
             int left =
                     panelLeft + SIDE_WIDTH + 14;
 
-            /*
-             * Combat slotuna bırak
-             */
             for (int slot = 0; slot < 9; slot++) {
 
                 int x =
@@ -1052,15 +858,18 @@ public class KaizokuMenuScreen extends Screen {
                         )
                 ) {
 
-                    SkillLoadout.setSkill(
-                            slot,
-                            getLibrarySkillName(
+                    SkillDefinition skill =
+                            SkillRegistry.getSkill(
                                     draggingSkill
-                            ),
-                            getLibrarySkillIcon(
-                                    draggingSkill
-                            )
-                    );
+                            );
+
+                    if (skill != null) {
+
+                        SkillLoadout.setSkill(
+                                slot,
+                                skill.id()
+                        );
+                    }
 
                     break;
                 }
@@ -1075,6 +884,24 @@ public class KaizokuMenuScreen extends Screen {
                 mouseX,
                 mouseY,
                 button
+        );
+    }
+
+    private String getShortName(
+            String name
+    ) {
+
+        if (name == null) {
+            return "";
+        }
+
+        if (name.length() <= 5) {
+            return name;
+        }
+
+        return name.substring(
+                0,
+                5
         );
     }
 
