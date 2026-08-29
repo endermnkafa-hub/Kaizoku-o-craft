@@ -9,15 +9,34 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class StaminaManager {
 
+    /*
+     * Level 1:
+     * 100 stamina
+     */
     public static final double BASE_MAX_STAMINA =
             100.0D;
 
+    /*
+     * Her level:
+     * +2 max stamina
+     *
+     * Level 10:
+     * 118 stamina
+     */
     public static final double STAMINA_PER_LEVEL =
             2.0D;
 
+    /*
+     * 20 tick = 1 saniye
+     *
+     * 0.35 x 20 = 7 stamina / saniye
+     */
     public static final double REGEN_PER_TICK =
             0.35D;
 
+    /*
+     * Client'a her 5 tickte bir sync.
+     */
     private static final int SYNC_INTERVAL =
             5;
 
@@ -28,7 +47,10 @@ public final class StaminaManager {
             long level
     ) {
 
-        if (level < 1L) {
+        if (
+                level < 1L
+        ) {
+
             level = 1L;
         }
 
@@ -42,6 +64,10 @@ public final class StaminaManager {
         );
     }
 
+    /*
+     * Oyuncunun max stamina'sını
+     * level'a göre günceller.
+     */
     public static void updateMaxStamina(
             ServerPlayer player
     ) {
@@ -61,6 +87,12 @@ public final class StaminaManager {
         );
     }
 
+    /*
+     * Stamina harca.
+     *
+     * true  = başarılı
+     * false = stamina yetmedi
+     */
     public static boolean consume(
             ServerPlayer player,
             double amount
@@ -69,6 +101,7 @@ public final class StaminaManager {
         if (
                 amount <= 0.0D
         ) {
+
             return true;
         }
 
@@ -77,6 +110,10 @@ public final class StaminaManager {
                         player
                 );
 
+        /*
+         * Her kullanımda level'a göre
+         * max değeri garanti et.
+         */
         updateMaxStamina(
                 player
         );
@@ -85,6 +122,15 @@ public final class StaminaManager {
                 data.getStamina()
                         < amount
         ) {
+
+            /*
+             * Client eski değer gösteriyor
+             * olabilir. Gerçeği tekrar gönder.
+             */
+            sync(
+                    player
+            );
+
             return false;
         }
 
@@ -93,6 +139,9 @@ public final class StaminaManager {
                         - amount
         );
 
+        /*
+         * Kullanım sonrası anında sync.
+         */
         sync(
                 player
         );
@@ -100,6 +149,9 @@ public final class StaminaManager {
         return true;
     }
 
+    /*
+     * Regen.
+     */
     public static void regenerate(
             ServerPlayer player
     ) {
@@ -109,26 +161,9 @@ public final class StaminaManager {
                         player
                 );
 
-        double oldMax =
-                data.getMaxStamina();
-
         updateMaxStamina(
                 player
         );
-
-        /*
-         * Level atladıysa max stamina yükselir.
-         */
-        if (
-                data.getMaxStamina()
-                        > oldMax
-        ) {
-
-            /*
-             * Yeni kapasitenin tamamını
-             * anında vermiyoruz.
-             */
-        }
 
         if (
                 data.getStamina()
@@ -141,6 +176,9 @@ public final class StaminaManager {
         }
     }
 
+    /*
+     * Server tick.
+     */
     public static void tickServer(
             MinecraftServer server
     ) {
@@ -158,6 +196,9 @@ public final class StaminaManager {
                     player
             );
 
+            /*
+             * Client sync
+             */
             if (
                     tick % SYNC_INTERVAL
                             == 0
@@ -170,6 +211,9 @@ public final class StaminaManager {
         }
     }
 
+    /*
+     * Client'a stamina gönder.
+     */
     public static void sync(
             ServerPlayer player
     ) {
