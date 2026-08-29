@@ -14,13 +14,41 @@ public final class CombatHud {
     private static final int SLOT_HEIGHT = 44;
     private static final int SLOT_GAP = 3;
 
+    private static final float ANIMATION_DISTANCE = 18.0F;
+    private static final double ANIMATION_SPEED = 0.010D;
+
+    private static boolean lastCombatState = false;
+    private static double animationProgress = 0.0D;
+    private static long lastFrameTime = System.nanoTime();
+
     private CombatHud() {
     }
 
     @SubscribeEvent
     public static void render(RenderGuiEvent.Post event) {
 
-        if (!CombatState.isActive()) {
+        boolean combatActive = CombatState.isActive();
+
+        /*
+         * Combat Mode açıldı/kapatıldıysa animasyonu
+         * başlangıç durumuna getir.
+         */
+        if (combatActive != lastCombatState) {
+
+            if (combatActive) {
+                animationProgress = 0.0D;
+            } else {
+                animationProgress = 1.0D;
+            }
+
+            lastCombatState = combatActive;
+        }
+
+        /*
+         * Combat kapalı ve kapanma animasyonu tamamlandıysa
+         * hiçbir şey çizme.
+         */
+        if (!combatActive && animationProgress <= 0.0D) {
             return;
         }
 
@@ -30,7 +58,67 @@ public final class CombatHud {
             return;
         }
 
-        GuiGraphics graphics = event.getGuiGraphics();
+        /*
+         * Geçen gerçek zamanı hesapla.
+         * Böylece animasyon FPS'e bağlı olmaz.
+         */
+        long currentTime = System.nanoTime();
+
+        double deltaSeconds =
+                (currentTime - lastFrameTime) / 1_000_000_000.0D;
+
+        lastFrameTime = currentTime;
+
+        /*
+         * Çok büyük frame aralıklarında animasyonun
+         * fırlamasını engelle.
+         */
+        deltaSeconds =
+                Math.min(deltaSeconds, 0.05D);
+
+        if (combatActive) {
+
+            animationProgress +=
+                    deltaSeconds / ANIMATION_SPEED;
+
+        } else {
+
+            animationProgress -=
+                    deltaSeconds / ANIMATION_SPEED;
+        }
+
+        animationProgress =
+                Math.max(
+                        0.0D,
+                        Math.min(1.0D, animationProgress)
+                );
+
+        /*
+         * Smooth easing.
+         *
+         * Başlangıçta hızlı,
+         * sona yaklaşırken yavaşlar.
+         */
+        double easedProgress =
+                1.0D - Math.pow(
+                        1.0D - animationProgress,
+                        3.0D
+                );
+
+        /*
+         * Skill bar aşağıdan başlayıp yukarı çıkar.
+         *
+         * Combat açık:
+         * 18 px aşağı → normal konum
+         */
+        int animationOffset =
+                (int) (
+                        ANIMATION_DISTANCE
+                                * (1.0D - easedProgress)
+                );
+
+        GuiGraphics graphics =
+                event.getGuiGraphics();
 
         int screenWidth =
                 minecraft.getWindow().getGuiScaledWidth();
@@ -48,42 +136,127 @@ public final class CombatHud {
                 (screenWidth - totalWidth) / 2;
 
         int y =
-                screenHeight - SLOT_HEIGHT - 6;
+                screenHeight
+                        - SLOT_HEIGHT
+                        - 6
+                        + animationOffset;
 
-        drawSkill(graphics, minecraft, startX, y, "Punch", "Z",
-                new ItemStack(Items.LEATHER));
+        /*
+         * 1 — Punch
+         */
+        drawSkill(
+                graphics,
+                minecraft,
+                startX,
+                y,
+                "Punch",
+                "Z",
+                new ItemStack(Items.LEATHER)
+        );
 
-        drawSkill(graphics, minecraft,
-                startX + (SLOT_WIDTH + SLOT_GAP) * 1,
-                y, "Empty", "X", ItemStack.EMPTY);
+        /*
+         * 2 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
+                startX + (SLOT_WIDTH + SLOT_GAP),
+                y,
+                "Empty",
+                "X",
+                ItemStack.EMPTY
+        );
 
-        drawSkill(graphics, minecraft,
+        /*
+         * 3 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
                 startX + (SLOT_WIDTH + SLOT_GAP) * 2,
-                y, "Empty", "C", ItemStack.EMPTY);
+                y,
+                "Empty",
+                "C",
+                ItemStack.EMPTY
+        );
 
-        drawSkill(graphics, minecraft,
+        /*
+         * 4 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
                 startX + (SLOT_WIDTH + SLOT_GAP) * 3,
-                y, "Empty", "V", ItemStack.EMPTY);
+                y,
+                "Empty",
+                "V",
+                ItemStack.EMPTY
+        );
 
-        drawSkill(graphics, minecraft,
+        /*
+         * 5 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
                 startX + (SLOT_WIDTH + SLOT_GAP) * 4,
-                y, "Empty", "B", ItemStack.EMPTY);
+                y,
+                "Empty",
+                "B",
+                ItemStack.EMPTY
+        );
 
-        drawSkill(graphics, minecraft,
+        /*
+         * 6 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
                 startX + (SLOT_WIDTH + SLOT_GAP) * 5,
-                y, "Empty", "N", ItemStack.EMPTY);
+                y,
+                "Empty",
+                "N",
+                ItemStack.EMPTY
+        );
 
-        drawSkill(graphics, minecraft,
+        /*
+         * 7 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
                 startX + (SLOT_WIDTH + SLOT_GAP) * 6,
-                y, "Empty", "1", ItemStack.EMPTY);
+                y,
+                "Empty",
+                "1",
+                ItemStack.EMPTY
+        );
 
-        drawSkill(graphics, minecraft,
+        /*
+         * 8 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
                 startX + (SLOT_WIDTH + SLOT_GAP) * 7,
-                y, "Empty", "2", ItemStack.EMPTY);
+                y,
+                "Empty",
+                "2",
+                ItemStack.EMPTY
+        );
 
-        drawSkill(graphics, minecraft,
+        /*
+         * 9 — Empty
+         */
+        drawSkill(
+                graphics,
+                minecraft,
                 startX + (SLOT_WIDTH + SLOT_GAP) * 8,
-                y, "Empty", "3", ItemStack.EMPTY);
+                y,
+                "Empty",
+                "3",
+                ItemStack.EMPTY
+        );
     }
 
     private static void drawSkill(
@@ -96,6 +269,9 @@ public final class CombatHud {
             ItemStack icon
     ) {
 
+        /*
+         * Hafif gölge
+         */
         graphics.fill(
                 x + 1,
                 y + 1,
@@ -104,6 +280,9 @@ public final class CombatHud {
                 0x80000000
         );
 
+        /*
+         * Arka plan
+         */
         graphics.fill(
                 x,
                 y,
@@ -112,6 +291,9 @@ public final class CombatHud {
                 0xD0181818
         );
 
+        /*
+         * Kenarlık
+         */
         drawBorder(
                 graphics,
                 x,
@@ -121,7 +303,9 @@ public final class CombatHud {
                 0xFF999999
         );
 
-        // İkon
+        /*
+         * İkon
+         */
         if (!icon.isEmpty()) {
 
             int iconX =
@@ -153,7 +337,9 @@ public final class CombatHud {
             );
         }
 
-        // İsim
+        /*
+         * Skill adı
+         */
         String displayName =
                 name.length() > 6
                         ? name.substring(0, 6)
@@ -171,16 +357,15 @@ public final class CombatHud {
                 true
         );
 
-        // Tuş
-        String keyText =
-                key;
-
+        /*
+         * Kullanım tuşu
+         */
         int keyWidth =
-                minecraft.font.width(keyText);
+                minecraft.font.width(key);
 
         graphics.drawString(
                 minecraft.font,
-                keyText,
+                key,
                 x + (SLOT_WIDTH - keyWidth) / 2,
                 y + 35,
                 0xFFFFD54A,
