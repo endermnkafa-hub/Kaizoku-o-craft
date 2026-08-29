@@ -182,9 +182,15 @@ public abstract class PlayerAnimationMixin<T extends LivingEntity> {
 			// Apply rotation
 			Vec3 rotation = KaizokuOCraftModPlayerAnimationAPI.PlayerBone.interpolate(bone.rotations, animationProgress, player);
 			if (rotation != null) {
-				modelPart.xRot = (float) Math.toRadians(rotation.x);
-				modelPart.yRot = (float) Math.toRadians(rotation.y);
-				modelPart.zRot = (float) Math.toRadians(rotation.z);
+				if (boneName.equals("right_lower_arm") || boneName.equals("left_lower_arm") || boneName.equals("right_lower_leg") || boneName.equals("left_lower_leg")) {
+					modelPart.xRot += (float) Math.toRadians(rotation.x);
+					modelPart.yRot += (float) Math.toRadians(rotation.y);
+					modelPart.zRot += (float) Math.toRadians(rotation.z);
+				} else {
+					modelPart.xRot = (float) Math.toRadians(rotation.x);
+					modelPart.yRot = (float) Math.toRadians(rotation.y);
+					modelPart.zRot = (float) Math.toRadians(rotation.z);
+				}
 			}
 			// Apply position (don't apply if null - keep default position)
 			Vec3 position = KaizokuOCraftModPlayerAnimationAPI.PlayerBone.interpolate(bone.positions, animationProgress, player);
