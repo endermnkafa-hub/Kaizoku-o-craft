@@ -11,6 +11,9 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
 
     private RaceType race = RaceType.HUMAN;
 
+    private double stamina = 100.0D;
+    private double maxStamina = 100.0D;
+
     public long getLevel() {
         return level;
     }
@@ -38,31 +41,151 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
     }
 
     public void setRace(RaceType race) {
-        this.race = race == null ? RaceType.HUMAN : race;
+        this.race = race == null
+                ? RaceType.HUMAN
+                : race;
+    }
+
+    public double getStamina() {
+        return stamina;
+    }
+
+    public void setStamina(double stamina) {
+        this.stamina =
+                Math.max(
+                        0.0D,
+                        Math.min(
+                                maxStamina,
+                                stamina
+                        )
+                );
+    }
+
+    public void addStamina(double amount) {
+        if (amount > 0.0D) {
+            setStamina(
+                    stamina + amount
+            );
+        }
+    }
+
+    public double getMaxStamina() {
+        return maxStamina;
+    }
+
+    public void setMaxStamina(double maxStamina) {
+
+        this.maxStamina =
+                Math.max(
+                        1.0D,
+                        maxStamina
+                );
+
+        this.stamina =
+                Math.min(
+                        this.stamina,
+                        this.maxStamina
+                );
     }
 
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag tag = new CompoundTag();
+    public CompoundTag serializeNBT(
+            HolderLookup.Provider provider
+    ) {
 
-        tag.putLong("Level", level);
-        tag.putLong("Experience", experience);
-        tag.putString("Race", race.name());
+        CompoundTag tag =
+                new CompoundTag();
+
+        tag.putLong(
+                "Level",
+                level
+        );
+
+        tag.putLong(
+                "Experience",
+                experience
+        );
+
+        tag.putString(
+                "Race",
+                race.name()
+        );
+
+        tag.putDouble(
+                "Stamina",
+                stamina
+        );
+
+        tag.putDouble(
+                "MaxStamina",
+                maxStamina
+        );
 
         return tag;
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
-        level = Math.max(1L, tag.getLong("Level"));
-        experience = Math.max(0L, tag.getLong("Experience"));
+    public void deserializeNBT(
+            HolderLookup.Provider provider,
+            CompoundTag tag
+    ) {
 
-        String raceName = tag.getString("Race");
+        level =
+                Math.max(
+                        1L,
+                        tag.getLong("Level")
+                );
+
+        experience =
+                Math.max(
+                        0L,
+                        tag.getLong("Experience")
+                );
+
+        String raceName =
+                tag.getString("Race");
 
         try {
-            race = RaceType.valueOf(raceName);
+            race =
+                    RaceType.valueOf(
+                            raceName
+                    );
         } catch (IllegalArgumentException exception) {
-            race = RaceType.HUMAN;
+            race =
+                    RaceType.HUMAN;
+        }
+
+        if (tag.contains("MaxStamina")) {
+
+            maxStamina =
+                    Math.max(
+                            1.0D,
+                            tag.getDouble(
+                                    "MaxStamina"
+                            )
+                    );
+        } else {
+
+            maxStamina =
+                    100.0D;
+        }
+
+        if (tag.contains("Stamina")) {
+
+            stamina =
+                    Math.max(
+                            0.0D,
+                            Math.min(
+                                    maxStamina,
+                                    tag.getDouble(
+                                            "Stamina"
+                                    )
+                            )
+                    );
+        } else {
+
+            stamina =
+                    maxStamina;
         }
     }
 }
