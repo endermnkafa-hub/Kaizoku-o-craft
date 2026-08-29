@@ -397,6 +397,7 @@ public final class SkillManager {
             ServerPlayer player,
             double multiplier
     ) {
+        player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
 
         LivingEntity target =
                 findTarget(
