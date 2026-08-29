@@ -17,8 +17,20 @@ public final class CombatHud {
     private static final int STAMINA_HEIGHT = 12;
     private static final int STAMINA_GAP = 5;
 
+    /*
+     * Combat bar animasyonu.
+     */
     private static final float ANIMATION_DISTANCE = 18.0F;
     private static final double ANIMATION_SPEED = 0.18D;
+
+    /*
+     * Vanilla can/açlık HUD'u ekranın
+     * yaklaşık 39 px yukarısında olduğundan
+     * Combat Bar'ı onun altında ama
+     * ekranın içinde tutmak için daha küçük
+     * ve aşağıda konumlandırıyoruz.
+     */
+    private static final int BOTTOM_MARGIN = 4;
 
     private static boolean lastCombatState = false;
 
@@ -73,6 +85,9 @@ public final class CombatHud {
             return;
         }
 
+        /*
+         * Animation timing
+         */
         long currentTime =
                 System.nanoTime();
 
@@ -144,34 +159,48 @@ public final class CombatHud {
         int slotCount =
                 SkillLoadout.getSlotCount();
 
+        /*
+         * Skill bar genişliği.
+         */
         int skillWidth =
                 SLOT_WIDTH * slotCount
                         + SLOT_GAP
                         * (slotCount - 1);
 
+        /*
+         * Stamina ayrı panel olduğu için
+         * tamamını hesaba kat.
+         */
         int totalWidth =
                 skillWidth
                         + STAMINA_GAP
                         + STAMINA_WIDTH;
 
+        /*
+         * GERÇEK MERKEZLEME
+         */
         int startX =
-                (
-                        screenWidth
-                                - totalWidth
-                ) / 2;
+                Math.round(
+                        (
+                                screenWidth
+                                        - totalWidth
+                        ) / 2.0F
+                );
 
         /*
-         * Combat Bar'ı vanilla can/açlık
-         * satırının üstüne taşıyoruz.
+         * Combat Bar ekranın en altında.
+         *
+         * Böylece can/açlık barının altında
+         * kalıyor.
          */
         int y =
-		        screenHeight
-		                - SLOT_HEIGHT
-		                - 6
-		                + animationOffset;
+                screenHeight
+                        - SLOT_HEIGHT
+                        - BOTTOM_MARGIN
+                        + animationOffset;
 
         /*
-         * SKILL SLOTLARI
+         * SKILL SLOT'LARI
          */
         for (
                 int slot = 0;
@@ -191,17 +220,13 @@ public final class CombatHud {
                     minecraft,
                     x,
                     y,
-                    SkillLoadout.getSkill(
-                            slot
-                    ),
-                    SkillLoadout.getSkillKey(
-                            slot
-                    )
+                    SkillLoadout.getSkill(slot),
+                    SkillLoadout.getSkillKey(slot)
             );
         }
 
         /*
-         * STAMINA BAR
+         * STAMINA
          */
         int staminaX =
                 startX
@@ -217,6 +242,7 @@ public final class CombatHud {
 
         drawStamina(
                 graphics,
+                minecraft,
                 staminaX,
                 staminaY
         );
@@ -232,7 +258,7 @@ public final class CombatHud {
     ) {
 
         /*
-         * Arka plan
+         * Arka plan.
          */
         graphics.fill(
                 x,
@@ -242,9 +268,6 @@ public final class CombatHud {
                 0xD0181818
         );
 
-        /*
-         * Cooldown
-         */
         long remaining =
                 skill == null
                         ? 0L
@@ -257,7 +280,7 @@ public final class CombatHud {
                 remaining > 0L;
 
         /*
-         * Cooldown'un karanlık arka planı.
+         * Cooldown karartması.
          */
         if (onCooldown) {
 
@@ -270,9 +293,6 @@ public final class CombatHud {
             );
         }
 
-        /*
-         * Kenarlık
-         */
         drawBorder(
                 graphics,
                 x,
@@ -298,7 +318,7 @@ public final class CombatHud {
         }
 
         /*
-         * İkon
+         * İkon.
          */
         ItemStack icon =
                 skill.icon();
@@ -313,7 +333,7 @@ public final class CombatHud {
         }
 
         /*
-         * İsim
+         * İsim.
          */
         String name =
                 skill.name().length() > 4
@@ -332,7 +352,7 @@ public final class CombatHud {
         );
 
         /*
-         * Tuş
+         * Kullanım tuşu.
          */
         graphics.drawCenteredString(
                 minecraft.font,
@@ -343,35 +363,16 @@ public final class CombatHud {
         );
 
         /*
-         * COOLDOWN SAYACI
+         * Cooldown.
          */
         if (onCooldown) {
 
-            String timeText;
+            String timeText =
+                    String.format(
+                            "%.1f",
+                            remaining / 1000.0D
+                    );
 
-            if (remaining >= 1000L) {
-
-                timeText =
-                        String.format(
-                                "%.1f",
-                                remaining
-                                        / 1000.0D
-                        );
-
-            } else {
-
-                timeText =
-                        String.format(
-                                "%.1f",
-                                remaining
-                                        / 1000.0D
-                        );
-            }
-
-            /*
-             * Sayacın arkasında küçük siyah
-             * kutu.
-             */
             graphics.fill(
                     x + 3,
                     y + 11,
@@ -388,9 +389,6 @@ public final class CombatHud {
                     0xFFFFFFFF
             );
 
-            /*
-             * Cooldown ilerleme çizgisi.
-             */
             double progress =
                     SkillCooldownClient.getProgress(
                             skill.id(),
@@ -418,12 +416,13 @@ public final class CombatHud {
 
     private static void drawStamina(
             GuiGraphics graphics,
+            Minecraft minecraft,
             int x,
             int y
     ) {
 
         /*
-         * XP bar benzeri stamina bar.
+         * Minecraft XP bar tarzı.
          */
         graphics.fill(
                 x,
@@ -454,7 +453,7 @@ public final class CombatHud {
         }
 
         /*
-         * İnce üst ışık çizgisi.
+         * Kenar çizgisi.
          */
         graphics.fill(
                 x,
@@ -464,9 +463,14 @@ public final class CombatHud {
                 0xFFAAAAAA
         );
 
-        /*
-         * Stamina yazısı.
-         */
+        graphics.fill(
+                x,
+                y + STAMINA_HEIGHT - 1,
+                x + STAMINA_WIDTH,
+                y + STAMINA_HEIGHT,
+                0xFF555555
+        );
+
         String text =
                 String.format(
                         "STA %.0f/%.0f",
@@ -475,7 +479,7 @@ public final class CombatHud {
                 );
 
         graphics.drawCenteredString(
-                Minecraft.getInstance().font,
+                minecraft.font,
                 text,
                 x + STAMINA_WIDTH / 2,
                 y - 11,
