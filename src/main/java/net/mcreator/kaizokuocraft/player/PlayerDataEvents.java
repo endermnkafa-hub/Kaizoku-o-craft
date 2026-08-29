@@ -14,31 +14,80 @@ public final class PlayerDataEvents {
     }
 
     @SubscribeEvent
-    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
+    public static void onPlayerLogin(
+            PlayerEvent.PlayerLoggedInEvent event
+    ) {
+
+        if (
+                !(event.getEntity()
+                        instanceof ServerPlayer player)
+        ) {
+
             return;
         }
 
-        PlayerData data = PlayerDataManager.get(player);
+        PlayerData data =
+                PlayerDataManager.get(
+                        player
+                );
 
-        RaceManager.applyRace(player);
+        /*
+         * Level -> max stamina.
+         */
+        StaminaManager.updateMaxStamina(
+                player
+        );
 
+        /*
+         * Race.
+         */
+        RaceManager.applyRace(
+                player
+        );
+
+        /*
+         * Normal player data.
+         */
         PacketDistributor.sendToPlayer(
                 player,
                 new SyncPlayerDataPacket(
-        			data.getLevel(),
-        			data.getExperience(),
-        			data.getRace()
-				)
+                        data.getLevel(),
+                        data.getExperience(),
+                        data.getRace()
+                )
+        );
+
+        /*
+         * Gerçek server stamina'sı.
+         */
+        StaminaManager.sync(
+                player
         );
     }
 
     @SubscribeEvent
-	public static void onPlayerClone(PlayerEvent.Clone event) {
-    	if (!(event.getEntity() instanceof ServerPlayer player)) {
-        	return;
-    	}
+    public static void onPlayerClone(
+            PlayerEvent.Clone event
+    ) {
 
-    	RaceManager.applyRace(player);
-	}
+        if (
+                !(event.getEntity()
+                        instanceof ServerPlayer player)
+        ) {
+
+            return;
+        }
+
+        RaceManager.applyRace(
+                player
+        );
+
+        StaminaManager.updateMaxStamina(
+                player
+        );
+
+        StaminaManager.sync(
+                player
+        );
+    }
 }
