@@ -2,8 +2,10 @@ package net.mcreator.kaizokuocraft.network;
 
 import net.mcreator.kaizokuocraft.client.ClientPlayerData;
 import net.mcreator.kaizokuocraft.KaizokuOCraftMod;
+import net.mcreator.kaizokuocraft.player.FactionType;
 import net.mcreator.kaizokuocraft.player.RaceType;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -13,6 +15,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.minecraft.network.codec.StreamCodec;
 
 public record SyncPlayerDataPacket(
+        boolean characterCreated,
+        FactionType faction,
         long level,
         long experience,
         RaceType race,
@@ -24,8 +28,8 @@ public record SyncPlayerDataPacket(
         double fightingMastery,
         double sniperMastery,
         double kickMastery,
-        net.minecraft.nbt.CompoundTag hakiData,
-        net.minecraft.nbt.CompoundTag fruitData
+        CompoundTag hakiData,
+        CompoundTag fruitData
 ) implements CustomPacketPayload {
 
     public static final Type<SyncPlayerDataPacket> TYPE =
@@ -39,10 +43,12 @@ public record SyncPlayerDataPacket(
     public static final StreamCodec<FriendlyByteBuf, SyncPlayerDataPacket> STREAM_CODEC =
             StreamCodec.of(
                     (buf, packet) -> {
+                        buf.writeBoolean(packet.characterCreated());
+                        buf.writeUtf(packet.faction() != null ? packet.faction().name() : "PIRATE");
                         buf.writeVarLong(packet.level());
                         buf.writeVarLong(packet.experience());
-                        buf.writeUtf(packet.race().name());
-                        buf.writeUtf(packet.combatStyle());
+                        buf.writeUtf(packet.race() != null ? packet.race().name() : "HUMAN");
+                        buf.writeUtf(packet.combatStyle() != null ? packet.combatStyle() : "FIST");
                         buf.writeInt(packet.statPoints());
                         buf.writeInt(packet.strength());
                         buf.writeInt(packet.defense());
@@ -54,13 +60,21 @@ public record SyncPlayerDataPacket(
                         buf.writeNbt(packet.fruitData());
                     },
                     buf -> {
+                        boolean characterCreated = buf.readBoolean();
+                        FactionType faction;
+                        try {
+                            faction = FactionType.valueOf(buf.readUtf());
+                        } catch (Exception e) {
+                            faction = FactionType.PIRATE;
+                        }
+
                         long level = buf.readVarLong();
                         long experience = buf.readVarLong();
 
                         RaceType race;
                         try {
                             race = RaceType.valueOf(buf.readUtf());
-                        } catch (IllegalArgumentException exception) {
+                        } catch (Exception e) {
                             race = RaceType.HUMAN;
                         }
 
@@ -72,10 +86,12 @@ public record SyncPlayerDataPacket(
                         double fightingMastery = buf.readDouble();
                         double sniperMastery = buf.readDouble();
                         double kickMastery = buf.readDouble();
-                        net.minecraft.nbt.CompoundTag hakiData = buf.readNbt();
-                        net.minecraft.nbt.CompoundTag fruitData = buf.readNbt();
+                        CompoundTag hakiData = buf.readNbt();
+                        CompoundTag fruitData = buf.readNbt();
 
                         return new SyncPlayerDataPacket(
+                                characterCreated,
+                                faction,
                                 level,
                                 experience,
                                 race,
@@ -87,8 +103,8 @@ public record SyncPlayerDataPacket(
                                 fightingMastery,
                                 sniperMastery,
                                 kickMastery,
-                                hakiData != null ? hakiData : new net.minecraft.nbt.CompoundTag(),
-                                fruitData != null ? fruitData : new net.minecraft.nbt.CompoundTag()
+                                hakiData != null ? hakiData : new CompoundTag(),
+                                fruitData != null ? fruitData : new CompoundTag()
                         );
                     }
             );
@@ -108,6 +124,8 @@ public record SyncPlayerDataPacket(
 
         context.enqueueWork(() ->
                 ClientPlayerData.set(
+                        packet.characterCreated(),
+                        packet.faction(),
                         packet.level(),
                         packet.experience(),
                         packet.race(),

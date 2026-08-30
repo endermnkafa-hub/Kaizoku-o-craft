@@ -1,7 +1,9 @@
 package net.mcreator.kaizokuocraft.player;
 
+import net.mcreator.kaizokuocraft.KaizokuOCraftMod;
 import net.mcreator.kaizokuocraft.client.SkillRegistry;
 import net.mcreator.kaizokuocraft.client.SkillDefinition;
+import net.mcreator.kaizokuocraft.init.ModSounds;
 import net.mcreator.kaizokuocraft.network.PlayPlayerAnimationMessage;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,6 +44,10 @@ public final class SkillManager {
                 skillId == null
                         || skillId.isBlank()
         ) {
+            return;
+        }
+
+        if (!PlayerDataManager.get(player).isCharacterCreated()) {
             return;
         }
 
@@ -106,16 +112,34 @@ public final class SkillManager {
 
         switch (skillId) {
             case "punch" -> {
-                punch(player, 1.0D);
                 PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.punch", true, true));
+                KaizokuOCraftMod.queueServerWork(6, () -> punch(player, 1.0D));
             }
             case "heavy_punch" -> {
-                punch(player, 1.8D);
-                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.punch", true, true));
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.heavypunch", true, true));
+                KaizokuOCraftMod.queueServerWork(10, () -> punch(player, 1.8D));
             }
-            case "shockwave" -> shockwave(player);
-            case "uppercut" -> uppercut(player);
-            case "guard" -> guard(player);
+            case "shockwave" -> {
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.shockwave", true, true));
+                KaizokuOCraftMod.queueServerWork(11, () -> shockwave(player));
+            }
+            case "uppercut" -> {
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.uppercut", true, true));
+                KaizokuOCraftMod.queueServerWork(9, () -> uppercut(player));
+            }
+            case "downslam" -> {
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.downslam", true, true));
+                KaizokuOCraftMod.queueServerWork(12, () -> downslam(player));
+            }
+            case "double_strike" -> {
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.doublestrike", true, true));
+                KaizokuOCraftMod.queueServerWork(4, () -> doubleStrikeHit(player, 1));
+                KaizokuOCraftMod.queueServerWork(8, () -> doubleStrikeHit(player, 2));
+            }
+            case "front_kick" -> {
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new PlayPlayerAnimationMessage(player.getId(), "kaizoku_o_craft:animation.model.frontkick", true, true));
+                KaizokuOCraftMod.queueServerWork(8, () -> frontKick(player));
+            }
 
             // SWORD
             case "sword_slash" -> swordSlash(player, 1.2D);
@@ -395,6 +419,16 @@ public final class SkillManager {
         );
     }
 
+    private static void spawnHitSmokeRing(ServerLevel serverLevel, Vec3 center, int count, double radius, double speed) {
+        for (int i = 0; i < count; i++) {
+            double angle = (2 * Math.PI * i) / count;
+            double dx = Math.cos(angle);
+            double dz = Math.sin(angle);
+            serverLevel.sendParticles(ParticleTypes.CLOUD, center.x + dx * radius, center.y, center.z + dz * radius, 1, dx * speed, 0.02D, dz * speed, 0.05D);
+            serverLevel.sendParticles(ParticleTypes.POOF, center.x + dx * radius, center.y, center.z + dz * radius, 1, dx * (speed * 0.5D), 0.01D, dz * (speed * 0.5D), 0.02D);
+        }
+    }
+
     private static void punch(
             ServerPlayer player,
             double multiplier
@@ -411,7 +445,7 @@ public final class SkillManager {
                 target == null
         ) {
             // Miss sound
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.PLAYERS, 1.0F, 1.0F);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.NEUTRAL, 1.0F, 1.0F);
             return;
         }
 
@@ -441,11 +475,18 @@ public final class SkillManager {
                 (float) damage
         );
 
-        // Hit sound and particles
-        float pitch = multiplier == 1.0D ? 1.0F : 0.8F;
-        player.level().playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, SoundSource.PLAYERS, 1.0F, pitch);
+        // Custom hit sound: punch1 for normal punch, punch2 for heavy punch
+        if (multiplier == 1.0D) {
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(), ModSounds.PUNCH1.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+        } else {
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(), ModSounds.PUNCH2.get(), SoundSource.NEUTRAL, 1.1F, 1.0F);
+        }
+        
         if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0D, target.getZ(), multiplier == 1.0D ? 3 : 8, 0.1D, 0.1D, 0.1D, 0.1D);
+            Vec3 hitPos = target.position().add(0, target.getBbHeight() * 0.55D, 0);
+            // Dairesel duman halkası efekti
+            spawnHitSmokeRing(serverLevel, hitPos, multiplier == 1.0D ? 8 : 12, 0.2D, multiplier == 1.0D ? 0.15D : 0.25D);
+            serverLevel.sendParticles(ParticleTypes.CRIT, hitPos.x, hitPos.y, hitPos.z, multiplier == 1.0D ? 4 : 8, 0.1D, 0.1D, 0.1D, 0.1D);
         }
 
         Vec3 direction =
@@ -464,14 +505,15 @@ public final class SkillManager {
 
             double knockback =
                     multiplier == 1.0D
-                            ? 0.18D
-                            : 0.28D;
+                            ? 0.2D
+                            : 0.38D;
 
             target.push(
                     direction.x * knockback,
-                    0.08D,
+                    0.09D,
                     direction.z * knockback
             );
+            target.hurtMarked = true;
         }
     }
 
@@ -480,7 +522,7 @@ public final class SkillManager {
     ) {
 
         double range =
-                4.0D;
+                4.5D;
 
         AABB box =
                 player.getBoundingBox()
@@ -488,14 +530,16 @@ public final class SkillManager {
                                 range
                         );
 
-        // Shockwave sound
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, 1.4F);
+        // Shockwave custom sound: downslam
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.DOWNSLAM.get(), SoundSource.NEUTRAL, 1.1F, 1.1F);
+        
         if (player.level() instanceof ServerLevel serverLevel) {
-            // Expand cloud ring
+            Vec3 center = player.position().add(0, 0.15D, 0);
+            spawnHitSmokeRing(serverLevel, center, 18, 0.5D, 0.35D);
             for (double angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-                double dx = Math.cos(angle) * 1.5D;
-                double dz = Math.sin(angle) * 1.5D;
-                serverLevel.sendParticles(ParticleTypes.CLOUD, player.getX() + dx, player.getY() + 0.1D, player.getZ() + dz, 2, 0.1D, 0.0D, 0.1D, 0.1D);
+                double dx = Math.cos(angle) * 2.0D;
+                double dz = Math.sin(angle) * 2.0D;
+                serverLevel.sendParticles(ParticleTypes.CLOUD, player.getX() + dx, player.getY() + 0.1D, player.getZ() + dz, 2, 0.1D, 0.05D, 0.1D, 0.08D);
             }
         }
 
@@ -506,12 +550,12 @@ public final class SkillManager {
                                 LivingEntity.class,
                                 box,
                                 entity ->
-                                        entity != player
+                                         entity != player
                         )
         ) {
 
             double damage =
-                    4.0D
+                    4.5D
                             * PowerManager.getDamageMultiplier(
                                     player
                             );
@@ -539,10 +583,11 @@ public final class SkillManager {
                         direction.normalize();
 
                 target.push(
-                        direction.x * 0.35D,
-                        0.16D,
-                        direction.z * 0.35D
+                        direction.x * 0.4D,
+                        0.18D,
+                        direction.z * 0.4D
                 );
+                target.hurtMarked = true;
             }
         }
     }
@@ -554,18 +599,18 @@ public final class SkillManager {
         LivingEntity target =
                 findTarget(
                         player,
-                        3.0D
+                        3.2D
                 );
 
         if (
                 target == null
         ) {
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.PLAYERS, 1.0F, 1.2F);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.NEUTRAL, 1.0F, 1.2F);
             return;
         }
 
         double damage =
-                6.0D
+                6.5D
                         * PowerManager.getDamageMultiplier(
                                 player
                         );
@@ -578,38 +623,114 @@ public final class SkillManager {
                 (float) damage
         );
 
-        player.level().playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, SoundSource.PLAYERS, 1.0F, 0.9F);
+        // Custom uppercut sound
+        player.level().playSound(null, target.getX(), target.getY(), target.getZ(), ModSounds.UPPERCUT.get(), SoundSource.NEUTRAL, 1.1F, 1.0F);
+        
         if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CLOUD, target.getX(), target.getY() + 0.5D, target.getZ(), 6, 0.1D, 0.4D, 0.1D, 0.05D);
+            Vec3 hitPos = target.position().add(0, target.getBbHeight() * 0.5D, 0);
+            spawnHitSmokeRing(serverLevel, hitPos, 10, 0.2D, 0.18D);
+            serverLevel.sendParticles(ParticleTypes.CLOUD, target.getX(), target.getY() + 0.5D, target.getZ(), 8, 0.1D, 0.45D, 0.1D, 0.08D);
         }
 
         target.setDeltaMovement(
                 target.getDeltaMovement().x,
-                0.45D,
+                0.52D,
                 target.getDeltaMovement().z
         );
 
         target.hurtMarked = true;
     }
 
-    private static void guard(
-            ServerPlayer player
-    ) {
-
-        player.addEffect(
-                new MobEffectInstance(
-                        MobEffects.DAMAGE_RESISTANCE,
-                        40,
-                        1,
-                        false,
-                        false,
-                        true
-                )
-        );
-
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0F, 0.8F);
+    private static void downslam(ServerPlayer player) {
+        player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
+        double range = 4.2D;
+        AABB box = player.getBoundingBox().inflate(range);
+        
+        // Custom downslam sound
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.DOWNSLAM.get(), SoundSource.NEUTRAL, 1.2F, 0.95F);
+        
         if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CRIT, player.getX(), player.getY() + 1.0D, player.getZ(), 10, 0.3D, 0.5D, 0.3D, 0.0D);
+            Vec3 center = player.position().add(0, 0.15D, 0);
+            spawnHitSmokeRing(serverLevel, center, 20, 0.4D, 0.38D);
+            for (double angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
+                double dx = Math.cos(angle) * 2.2D;
+                double dz = Math.sin(angle) * 2.2D;
+                serverLevel.sendParticles(ParticleTypes.CLOUD, player.getX() + dx, player.getY() + 0.1D, player.getZ() + dz, 3, 0.2D, 0.08D, 0.2D, 0.1D);
+            }
+        }
+
+        for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, box, entity -> entity != player)) {
+            double damage = 8.5D * PowerManager.getDamageMultiplier(player);
+            target.hurt(player.damageSources().playerAttack(player), (float) damage);
+            
+            Vec3 direction = target.position().subtract(player.position());
+            if (direction.lengthSqr() > 0.0001D) {
+                direction = direction.normalize();
+                target.setDeltaMovement(direction.x * 0.25D, -0.45D, direction.z * 0.25D);
+                target.hurtMarked = true;
+            }
+        }
+    }
+
+    private static void doubleStrikeHit(ServerPlayer player, int strikeNumber) {
+        player.swing(strikeNumber == 1 ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND, true);
+        
+        LivingEntity target = findTarget(player, 3.5D);
+        if (target == null) {
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.NEUTRAL, 1.0F, strikeNumber == 1 ? 1.2F : 1.0F);
+            return;
+        }
+
+        double multiplier = strikeNumber == 1 ? 3.5D : 4.5D;
+        double damage = multiplier * PowerManager.getDamageMultiplier(player);
+        target.hurt(player.damageSources().playerAttack(player), (float) damage);
+        
+        if (strikeNumber == 1) {
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(), ModSounds.PUNCH1.get(), SoundSource.NEUTRAL, 1.0F, 1.05F);
+        } else {
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(), ModSounds.PUNCH2.get(), SoundSource.NEUTRAL, 1.05F, 1.0F);
+        }
+        
+        if (player.level() instanceof ServerLevel serverLevel) {
+            Vec3 hitPos = target.position().add(0, target.getBbHeight() * 0.55D, 0);
+            spawnHitSmokeRing(serverLevel, hitPos, strikeNumber == 1 ? 8 : 12, 0.2D, strikeNumber == 1 ? 0.16D : 0.24D);
+            serverLevel.sendParticles(ParticleTypes.CRIT, hitPos.x, hitPos.y, hitPos.z, 4, 0.1D, 0.1D, 0.1D, 0.1D);
+        }
+
+        Vec3 direction = target.position().subtract(player.position());
+        if (direction.lengthSqr() > 0.0001D) {
+            direction = direction.normalize();
+            target.push(direction.x * (strikeNumber == 1 ? 0.15D : 0.3D), 0.1D, direction.z * (strikeNumber == 1 ? 0.15D : 0.3D));
+            target.hurtMarked = true;
+        }
+    }
+
+    private static void frontKick(ServerPlayer player) {
+        player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
+        LivingEntity target = findTarget(player, 3.8D);
+        if (target == null) {
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, SoundSource.NEUTRAL, 1.0F, 1.0F);
+            return;
+        }
+
+        double damage = 7.5D * PowerManager.getDamageMultiplier(player);
+        target.hurt(player.damageSources().playerAttack(player), (float) damage);
+        
+        // Custom front kick sound: punch2
+        player.level().playSound(null, target.getX(), target.getY(), target.getZ(), ModSounds.PUNCH2.get(), SoundSource.NEUTRAL, 1.15F, 0.9F);
+        
+        if (player.level() instanceof ServerLevel serverLevel) {
+            Vec3 hitPos = target.position().add(0, target.getBbHeight() * 0.5D, 0);
+            spawnHitSmokeRing(serverLevel, hitPos, 14, 0.25D, 0.28D);
+            serverLevel.sendParticles(ParticleTypes.CLOUD, hitPos.x, hitPos.y, hitPos.z, 8, 0.2D, 0.2D, 0.2D, 0.1D);
+        }
+
+        Vec3 direction = target.position().subtract(player.position());
+        if (direction.lengthSqr() > 0.0001D) {
+            direction = direction.normalize();
+            // High horizontal knockback
+            target.push(direction.x * 0.72D, 0.14D, direction.z * 0.72D);
+            target.hurtMarked = true;
         }
     }
 

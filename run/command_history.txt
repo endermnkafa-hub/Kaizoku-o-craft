@@ -28,3 +28,7 @@
 /kaizoku_style fist
 /kaizoku_level set 10000000
 /data get entity @s PlayerCurrentAnimation
+/kaizoku_mastery a
+/kaizoku_mastery fighting set 100
+/kaizoku_level reset
+/kaizoku_level set 10

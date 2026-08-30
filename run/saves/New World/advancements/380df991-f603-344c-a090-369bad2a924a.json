@@ -25,7 +25,8 @@
     "criteria": {
       "minecraft:skeleton": "2026-08-29 12:44:27 +0300",
       "minecraft:spider": "2026-08-29 12:52:39 +0300",
-      "minecraft:zombie": "2026-08-28 23:38:26 +0300"
+      "minecraft:zombie": "2026-08-28 23:38:26 +0300",
+      "minecraft:creeper": "2026-08-30 00:51:54 +0300"
     },
     "done": false
   },
@@ -200,6 +201,18 @@
   "minecraft:recipes/decorations/brown_carpet": {
     "criteria": {
       "has_brown_wool": "2026-08-29 17:21:02 +0300"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/firework_rocket_simple": {
+    "criteria": {
+      "has_gunpowder": "2026-08-30 00:51:55 +0300"
+    },
+    "done": true
+  },
+  "minecraft:recipes/redstone/tnt": {
+    "criteria": {
+      "has_gunpowder": "2026-08-30 00:51:55 +0300"
     },
     "done": true
   },

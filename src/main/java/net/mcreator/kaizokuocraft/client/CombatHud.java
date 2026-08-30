@@ -86,6 +86,7 @@ public final class CombatHud {
         if (
                 minecraft.player == null
                         || minecraft.screen != null
+                        || !ClientPlayerData.isCharacterCreated()
         ) {
             return;
         }

@@ -160,10 +160,9 @@ public class KaizokuOCraftModPlayerAnimationAPI {
 						result.add(new Keyframe(time, parseValue(frameValue), null, null, false));
 					} else if (frameValue.isJsonObject()) {
 						JsonObject frameObj = frameValue.getAsJsonObject();
-						JsonElement valElem = frameObj.has("vector") ? frameObj.get("vector") : (frameObj.has("post") ? frameObj.get("post") : frameValue);
-						KeyframeValue value = parseValue(valElem);
-						KeyframeValue pre = frameObj.has("pre") ? parseValue(frameObj.get("pre")) : value;
-						KeyframeValue post = frameObj.has("post") ? parseValue(frameObj.get("post")) : value;
+						KeyframeValue value = frameObj.has("post") ? parseValue(frameObj.get("post")) : parseValue(frameValue);
+						KeyframeValue pre = frameObj.has("pre") ? parseValue(frameObj.get("pre")) : null;
+						KeyframeValue post = frameObj.has("post") ? parseValue(frameObj.get("post")) : null;
 						boolean catmullrom = frameObj.has("lerp_mode") && frameObj.get("lerp_mode").getAsString().equalsIgnoreCase("catmullrom");
 						result.add(new Keyframe(time, value, pre, post, catmullrom));
 					}
@@ -478,7 +477,6 @@ public class KaizokuOCraftModPlayerAnimationAPI {
 					for (Map.Entry<String, JsonElement> entry : sourceAnimations.entrySet()) {
 						String animationName = namespaces.get(namespaceIndex) + ":" + entry.getKey();
 						namespacedAnimations.add(animationName, entry.getValue());
-						namespacedAnimations.add(entry.getKey(), entry.getValue());
 					}
 					animationsWrapper.add("animations", namespacedAnimations);
 					KaizokuOCraftModPlayerAnimationAPI.loadAnimationFile(animationsWrapper);

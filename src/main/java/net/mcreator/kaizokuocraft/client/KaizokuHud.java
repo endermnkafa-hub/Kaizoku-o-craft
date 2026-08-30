@@ -31,6 +31,11 @@ public final class KaizokuHud {
             return;
         }
 
+        // Karakter seçimi yapılmadıysa HUD gizli kalır (Vanilla görünüm)
+        if (!ClientPlayerData.isCharacterCreated()) {
+            return;
+        }
+
         GuiGraphics graphics = event.getGuiGraphics();
 
         long level = ClientPlayerData.getLevel();

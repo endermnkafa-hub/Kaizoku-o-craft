@@ -48,9 +48,11 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
 
     /*
      * ==============================
-     * EXPANDED PLAYER STATS & DATA
+     * CHARACTER CREATION & FACTION
      * ==============================
      */
+    private boolean characterCreated = false;
+    private FactionType faction = FactionType.PIRATE;
 
     private String combatStyle = "FIST";
 
@@ -254,6 +256,34 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
      * ==============================
      */
 
+    public boolean isCharacterCreated() {
+        return characterCreated;
+    }
+
+    public void setCharacterCreated(boolean characterCreated) {
+        this.characterCreated = characterCreated;
+    }
+
+    public FactionType getFaction() {
+        return faction != null ? faction : FactionType.PIRATE;
+    }
+
+    public void setFaction(FactionType faction) {
+        this.faction = faction != null ? faction : FactionType.PIRATE;
+    }
+
+    public FightingStyle getFightingStyle() {
+        try {
+            return FightingStyle.valueOf(combatStyle);
+        } catch (Exception e) {
+            return FightingStyle.FIST;
+        }
+    }
+
+    public void setFightingStyle(FightingStyle style) {
+        this.combatStyle = style != null ? style.name() : "FIST";
+    }
+
     public String getCombatStyle() {
         return combatStyle;
     }
@@ -399,6 +429,16 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
                 defense
         );
 
+        tag.putBoolean(
+                "CharacterCreated",
+                characterCreated
+        );
+
+        tag.putString(
+                "Faction",
+                faction != null ? faction.name() : "PIRATE"
+        );
+
         tag.putDouble(
                 "SwordMastery",
                 swordMastery
@@ -466,18 +506,37 @@ public class PlayerData implements INBTSerializable<CompoundTag> {
                 );
 
         try {
-
             race =
                     RaceType.valueOf(
                             raceName
                     );
-
         } catch (
-                IllegalArgumentException exception
+                Exception exception
         ) {
-
             race =
                     RaceType.HUMAN;
+        }
+
+        characterCreated =
+                tag.getBoolean(
+                        "CharacterCreated"
+                );
+
+        String factionName =
+                tag.getString(
+                        "Faction"
+                );
+
+        try {
+            faction =
+                    FactionType.valueOf(
+                            factionName
+                    );
+        } catch (
+                Exception exception
+        ) {
+            faction =
+                    FactionType.PIRATE;
         }
 
         /*

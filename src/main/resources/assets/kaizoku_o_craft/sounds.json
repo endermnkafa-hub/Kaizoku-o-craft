@@ -1,0 +1,34 @@
+{
+  "punch1": {
+    "sounds": [
+      {
+        "name": "kaizoku_o_craft:punch1",
+        "stream": false
+      }
+    ]
+  },
+  "punch2": {
+    "sounds": [
+      {
+        "name": "kaizoku_o_craft:punch2",
+        "stream": false
+      }
+    ]
+  },
+  "downslam": {
+    "sounds": [
+      {
+        "name": "kaizoku_o_craft:downslam",
+        "stream": false
+      }
+    ]
+  },
+  "uppercut": {
+    "sounds": [
+      {
+        "name": "kaizoku_o_craft:uppercut",
+        "stream": false
+      }
+    ]
+  }
+}

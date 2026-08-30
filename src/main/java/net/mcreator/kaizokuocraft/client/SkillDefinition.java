@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 public record SkillDefinition(
         String id,
         String name,
+        String description,
         ItemStack icon,
         long cooldownMillis,
         FightingStyle style,

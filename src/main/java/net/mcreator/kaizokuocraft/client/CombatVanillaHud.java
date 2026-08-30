@@ -22,7 +22,7 @@ public final class CombatVanillaHud {
     ) {
 
         if (
-                !CombatState.isActive()
+                !CombatState.isActive() || !ClientPlayerData.isCharacterCreated()
         ) {
             return;
         }
@@ -122,7 +122,7 @@ public final class CombatVanillaHud {
     ) {
 
         if (
-                !CombatState.isActive()
+                !CombatState.isActive() || !ClientPlayerData.isCharacterCreated()
         ) {
             return;
         }

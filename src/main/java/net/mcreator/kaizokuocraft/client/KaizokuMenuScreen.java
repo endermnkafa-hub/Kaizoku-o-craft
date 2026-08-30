@@ -1,1189 +1,478 @@
 package net.mcreator.kaizokuocraft.client;
 
+import net.mcreator.kaizokuocraft.player.FightingStyle;
+import net.mcreator.kaizokuocraft.player.PowerManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class KaizokuMenuScreen extends Screen {
 
-    private enum Tab {
-        SKILLS,
-        STATS
+    public enum MenuTab {
+        GENEL("GENEL"),
+        DOVUS_STILI("DÖVÜŞ\nSTİLİ"),
+        HAKI("HAKİ"),
+        IRK("IRK"),
+        MEYVE("ŞEYTAN\nMEYVESİ");
+
+        private final String displayName;
+
+        MenuTab(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
-    private static final int PANEL_WIDTH = 340;
-    private static final int PANEL_HEIGHT = 230;
+    private static final int PANEL_WIDTH = 370;
+    private static final int PANEL_HEIGHT = 205;
 
-    private static final int SIDE_WIDTH = 70;
+    private MenuTab currentTab = MenuTab.GENEL;
 
-    private static final int SLOT_SIZE = 26;
-    private static final int SLOT_GAP = 2;
+    // Tooltip hover target
+    private SkillDefinition hoveredSkill = null;
+    private int tooltipMouseX = 0;
+    private int tooltipMouseY = 0;
 
-    private static final int SKILL_TOP_Y = 62;
-    private static final int COMBAT_Y = 148;
-
-    private Tab currentTab = Tab.SKILLS;
-
-    private int draggingSkill = -1;
+    private static final ResourceLocation STATS_BG =
+            ResourceLocation.fromNamespaceAndPath(
+                    net.mcreator.kaizokuocraft.KaizokuOCraftMod.MODID,
+                    "textures/gui/stats_menu_bg.png"
+            );
 
     public KaizokuMenuScreen() {
-        super(
-                Component.literal(
-                        "Kaizoku-ō Craft"
-                )
-        );
-    }
-    @Override
-	public boolean isPauseScreen() {
-	    return false;
-	}
-
-    @Override
-    protected void init() {
-        // Custom GUI
+        super(Component.literal("Genel İstatistiklerim"));
     }
 
     @Override
-    public void render(
-            GuiGraphics graphics,
-            int mouseX,
-            int mouseY,
-            float partialTick
-    ) {
+    public boolean isPauseScreen() {
+        return false;
+    }
 
-        /*
-         * Blur YOK.
-         */
-        graphics.fill(
-                0,
-                0,
-                this.width,
-                this.height,
-                0x70000000
-        );
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // Blur shader tetiklenmemesi için boş bırakıldı
+    }
 
-        int panelLeft =
-                (this.width - PANEL_WIDTH) / 2;
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        hoveredSkill = null;
 
-        int panelTop =
-                (this.height - PANEL_HEIGHT) / 2;
+        // Darkened background
+        graphics.fillGradient(0, 0, this.width, this.height, 0x80000000, 0xB0000000);
 
-        /*
-         * Ana panel
-         */
-        graphics.fill(
-                panelLeft,
-                panelTop,
-                panelLeft + PANEL_WIDTH,
-                panelTop + PANEL_HEIGHT,
-                0xFF151515
-        );
+        int left = (this.width - PANEL_WIDTH) / 2;
+        int top = (this.height - PANEL_HEIGHT) / 2;
 
-        drawBorder(
-                graphics,
-                panelLeft,
-                panelTop,
-                PANEL_WIDTH,
-                PANEL_HEIGHT,
-                0xFF666666
-        );
+        // 1. Draw High Definition One Piece GUI PNG Background
+        graphics.blit(STATS_BG, left, top, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, 654, 533);
 
-        /*
-         * Sol panel
-         */
-        graphics.fill(
-                panelLeft,
-                panelTop,
-                panelLeft + SIDE_WIDTH,
-                panelTop + PANEL_HEIGHT,
-                0xFF0C0C0C
-        );
+        // 2. Draw Header Banner
+        drawHeader(graphics, left, top, PANEL_WIDTH, getHeaderTitle());
 
-        graphics.fill(
-                panelLeft + SIDE_WIDTH,
-                panelTop,
-                panelLeft + SIDE_WIDTH + 1,
-                panelTop + PANEL_HEIGHT,
-                0xFF444444
-        );
+        // 3. Draw Left Navigation Tabs
+        drawLeftTabs(graphics, left + 10, top + 26, mouseX, mouseY);
 
-        /*
-         * Başlık
-         */
-        graphics.drawCenteredString(
-                this.font,
-                "KAIzoku-Ō",
-                panelLeft + PANEL_WIDTH / 2,
-                panelTop + 10,
-                0xFFFFFFFF
-        );
+        // 4. Draw Right Content Area based on current tab
+        int contentX = left + 96;
+        int contentY = top + 26;
+        int contentW = PANEL_WIDTH - 108;
 
-        drawTab(
-                graphics,
-                panelLeft,
-                panelTop,
-                "SKİLLER",
-                Tab.SKILLS,
-                42
-        );
-
-        drawTab(
-                graphics,
-                panelLeft,
-                panelTop,
-                "STATLAR",
-                Tab.STATS,
-                76
-        );
-
-        if (
-                currentTab == Tab.SKILLS
-        ) {
-
-            renderSkills(
-                    graphics,
-                    panelLeft,
-                    panelTop,
-                    mouseX,
-                    mouseY
-            );
-
+        if (currentTab == MenuTab.GENEL) {
+            renderGenelTab(graphics, contentX, contentY, contentW, mouseX, mouseY);
+        } else if (currentTab == MenuTab.DOVUS_STILI) {
+            renderDovusStiliTab(graphics, contentX, contentY, contentW, mouseX, mouseY);
         } else {
-
-            renderStats(
-                    graphics,
-                    panelLeft,
-                    panelTop
-            );
+            renderPlaceholderTab(graphics, contentX, contentY, contentW, currentTab.name());
         }
 
-        if (
-                draggingSkill != -1
-        ) {
-
-            drawDraggedSkill(
-                    graphics,
-                    mouseX,
-                    mouseY
-            );
+        // 5. Render Hover Tooltip on top of everything
+        if (hoveredSkill != null) {
+            renderSkillTooltip(graphics, hoveredSkill, tooltipMouseX, tooltipMouseY);
         }
     }
 
-    private void drawTab(
-            GuiGraphics graphics,
-            int panelLeft,
-            int panelTop,
-            String text,
-            Tab tab,
-            int yOffset
-    ) {
-
-        boolean active =
-                currentTab == tab;
-
-        int x =
-                panelLeft + 6;
-
-        int y =
-                panelTop + yOffset;
-
-        int width =
-                SIDE_WIDTH - 12;
-
-        int height =
-                26;
-
-        if (active) {
-
-            graphics.fill(
-                    x,
-                    y,
-                    x + width,
-                    y + height,
-                    0xFF292929
-            );
-
-            graphics.fill(
-                    x,
-                    y,
-                    x + 2,
-                    y + height,
-                    0xFFFFD54A
-            );
-        }
-
-        graphics.drawCenteredString(
-                this.font,
-                text,
-                x + width / 2,
-                y + 9,
-                active
-                        ? 0xFFFFD54A
-                        : 0xFFAAAAAA
-        );
+    private String getHeaderTitle() {
+        return switch (currentTab) {
+            case GENEL -> "GENEL İSTATİSTİKLERİM";
+            case DOVUS_STILI -> ClientPlayerData.getFightingStyle().getDisplayName() + " STİLİ";
+            case HAKI -> "HAKİ GÜÇLERİ";
+            case IRK -> "IRK BİLGİSİ";
+            case MEYVE -> "ŞEYTAN MEYVESİ";
+        };
     }
 
-    private void renderSkills(
-            GuiGraphics graphics,
-            int panelLeft,
-            int panelTop,
-            int mouseX,
-            int mouseY
-    ) {
+    private void renderGenelTab(GuiGraphics graphics, int x, int y, int w, int mouseX, int mouseY) {
+        long level = ClientPlayerData.getLevel();
+        long experience = ClientPlayerData.getExperience();
+        long requiredXp = 100L + (level * 25L);
+        double progress = Math.min(1.0D, (double) experience / (double) requiredXp);
 
-        int left =
-                panelLeft
-                        + SIDE_WIDTH
-                        + 14;
+        double levelDmg = PowerManager.getLevelDamageMultiplier(level);
+        double raceDmg = ClientPlayerData.getRace().getDamageMultiplier();
+        double totalDmg = levelDmg * raceDmg * (1.0D + ClientPlayerData.getStrength() * 0.02D);
 
-        graphics.drawString(
-                this.font,
-                "SKİLLER",
-                left,
-                panelTop + 30,
-                0xFFFFD54A,
-                true
-        );
+        double raceDef = ClientPlayerData.getRace().getDefenseMultiplier();
+        double totalDef = raceDef * (1.0D + ClientPlayerData.getDefense() * 0.02D);
 
-        int libraryIndex = 0;
-        String activeStyle = ClientPlayerData.getCombatStyle();
+        // 1. Current Level Header Box
+        int lvlH = 20;
+        graphics.fill(x - 1, y - 1, x + w + 1, y + lvlH + 1, 0xFF2A170B);
+        graphics.fillGradient(x, y, x + w, y + lvlH, 0xFF5E3917, 0xFF43260D);
+        graphics.fill(x, y, x + w, y + 1, 0xFF8A5A2B);
 
-        for (
-                SkillDefinition skill :
-                SkillRegistry.getSkills()
-        ) {
-            if (skill.style() != null && !skill.style().name().equalsIgnoreCase(activeStyle)) {
-                continue;
-            }
+        String lvlTitle = "MEVCUT GENEL SEVİYE: ";
+        String lvlVal = String.valueOf(level);
+        int totalLvlW = this.font.width(lvlTitle) + this.font.width(lvlVal);
+        int lvlStartX = x + (w - totalLvlW) / 2;
+        graphics.drawString(this.font, lvlTitle, lvlStartX, y + 6, 0xFFFFFFFF, true);
+        graphics.drawString(this.font, lvlVal, lvlStartX + this.font.width(lvlTitle), y + 6, 0xFFFFD700, true);
 
-            if (
-                    libraryIndex >= 9
-            ) {
+        // 2. XP Progress Bar Box
+        int barY = y + 24;
+        int barH = 16;
+        graphics.fill(x - 1, barY - 1, x + w + 1, barY + barH + 1, 0xFF2A170B);
+        graphics.fill(x, barY, x + w, barY + barH, 0xFF1B1B1B);
+
+        int fillW = (int) ((w - 24) * progress);
+        if (fillW > 0) {
+            graphics.fillGradient(x + 2, barY + 2, x + 2 + fillW, barY + barH - 2, 0xFFE5A91E, 0xFFF5D061);
+        }
+
+        String xpText = "XP İLERLEMESİ: " + experience + "/" + requiredXp + " XP";
+        int xpTextW = this.font.width(xpText);
+        graphics.drawString(this.font, xpText, x + (w - 24 - xpTextW) / 2 + 2, barY + 4, 0xFFFFFFFF, true);
+
+        int crownX = x + w - 20;
+        int crownY = barY + 2;
+        graphics.fill(crownX, crownY, crownX + 18, crownY + 12, 0xFF4A3510);
+        graphics.fill(crownX + 1, crownY + 1, crownX + 17, crownY + 11, 0xFFFFD700);
+        graphics.drawString(this.font, "XP", crownX + 4, crownY + 2, 0xFF1B1B1B, false);
+
+        // 3. Two Multiplier Cards (Damage and Defense)
+        int cardY = barY + 20;
+        int cardH = 24;
+        int cardW = (w - 6) / 2;
+
+        drawStatCard(graphics, x, cardY, cardW, cardH, new ItemStack(Items.IRON_SWORD), "HASAR ÇARPANI:", String.format("x%.1f", totalDmg));
+        drawStatCard(graphics, x + cardW + 6, cardY, cardW, cardH, new ItemStack(Items.SHIELD), "DEFANS ÇARPANI:", String.format("x%.1f", totalDef));
+
+        // 4. Large Bottom Wooden Panel (Empty as requested for future additions)
+        int bottomY = cardY + 28;
+        int bottomH = y + PANEL_HEIGHT - 36 - bottomY;
+        drawWoodenPlanksPanel(graphics, x, bottomY, w, bottomH);
+    }
+
+    private void renderDovusStiliTab(GuiGraphics graphics, int x, int y, int w, int mouseX, int mouseY) {
+        FightingStyle style = ClientPlayerData.getFightingStyle();
+        double currentMastery = switch (style) {
+            case FIST -> ClientPlayerData.getFightingMastery();
+            case SWORD -> ClientPlayerData.getSwordMastery();
+            case KICK -> ClientPlayerData.getKickMastery();
+            case SNIPER -> ClientPlayerData.getSniperMastery();
+        };
+
+        // 1. Mastery Level & Header Box
+        int masteryH = 20;
+        graphics.fill(x - 1, y - 1, x + w + 1, y + masteryH + 1, 0xFF2A170B);
+        graphics.fillGradient(x, y, x + w, y + masteryH, 0xFF5E3917, 0xFF43260D);
+        graphics.fill(x, y, x + w, y + 1, 0xFF8A5A2B);
+
+        String masteryTitle = style.getDisplayName() + " USTALIĞI: ";
+        String masteryVal = "Lv. " + (int) currentMastery;
+        int totalMW = this.font.width(masteryTitle) + this.font.width(masteryVal);
+        int mStartX = x + (w - totalMW) / 2;
+        graphics.drawString(this.font, masteryTitle, mStartX, y + 6, 0xFFFFFFFF, true);
+        graphics.drawString(this.font, masteryVal, mStartX + this.font.width(masteryTitle), y + 6, 0xFFFFD700, true);
+
+        // 2. Skills Grid Area
+        int gridY = y + 24;
+        int gridH = y + PANEL_HEIGHT - 36 - gridY;
+        drawWoodenPlanksPanel(graphics, x, gridY, w, gridH);
+
+        List<SkillDefinition> skills = SkillRegistry.getSkillsForStyle(style);
+        int cardW = 125;
+        int cardH = 34;
+        int gapX = 6;
+        int gapY = 4;
+        int startX = x + 4;
+        int startY = gridY + 4;
+
+        for (int i = 0; i < skills.size(); i++) {
+            SkillDefinition skill = skills.get(i);
+            int col = i % 2;
+            int row = i / 2;
+            int cx = startX + col * (cardW + gapX);
+            int cy = startY + row * (cardH + gapY);
+
+            if (cy + cardH > gridY + gridH) {
                 break;
             }
 
-            int x =
-                    left
-                            + libraryIndex
-                            * (
-                            SLOT_SIZE
-                                    + SLOT_GAP
-                    );
+            boolean unlocked = currentMastery >= skill.requiredMastery();
+            boolean isHover = mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + cardH;
 
-            int y =
-                    panelTop
-                            + SKILL_TOP_Y;
-
-            drawLibrarySkill(
-                    graphics,
-                    skill,
-                    x,
-                    y,
-                    mouseX,
-                    mouseY
-            );
-
-            libraryIndex++;
-        }
-
-        while (
-                libraryIndex < 9
-        ) {
-
-            int x =
-                    left
-                            + libraryIndex
-                            * (
-                            SLOT_SIZE
-                                    + SLOT_GAP
-                    );
-
-            int y =
-                    panelTop
-                            + SKILL_TOP_Y;
-
-            drawEmptyLibrarySlot(
-                    graphics,
-                    x,
-                    y
-            );
-
-            libraryIndex++;
-        }
-
-        graphics.drawString(
-                this.font,
-                "COMBAT BAR",
-                left,
-                panelTop + 126,
-                0xFFFFD54A,
-                true
-        );
-
-        for (
-                int slot = 0;
-                slot < 9;
-                slot++
-        ) {
-
-            int x =
-                    left
-                            + slot
-                            * (
-                            SLOT_SIZE
-                                    + SLOT_GAP
-                    );
-
-            int y =
-                    panelTop
-                            + COMBAT_Y;
-
-            drawCombatSlot(
-                    graphics,
-                    slot,
-                    x,
-                    y,
-                    mouseX,
-                    mouseY
-            );
-        }
-
-        graphics.drawString(
-                this.font,
-                "Skill'i sürükleyip Combat Bar'a bırak.",
-                left,
-                panelTop + 184,
-                0xFF777777
-        );
-    }
-
-    private boolean isSkillUnlocked(SkillDefinition skill) {
-        if (skill.style() == null) return true;
-        double playerMastery = 0.0D;
-        if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.FIST) playerMastery = ClientPlayerData.getFightingMastery();
-        else if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.SWORD) playerMastery = ClientPlayerData.getSwordMastery();
-        else if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.KICK) playerMastery = ClientPlayerData.getKickMastery();
-        else if (skill.style() == net.mcreator.kaizokuocraft.player.FightingStyle.SNIPER) playerMastery = ClientPlayerData.getSniperMastery();
-        return playerMastery >= skill.requiredMastery();
-    }
-
-    private void drawLockedSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(
-                x,
-                y,
-                x + SLOT_SIZE,
-                y + SLOT_SIZE,
-                0x50501010
-        );
-        drawBorder(
-                graphics,
-                x,
-                y,
-                SLOT_SIZE,
-                SLOT_SIZE,
-                0xFF903030
-        );
-    }
-
-    private void drawLibrarySkill(
-            GuiGraphics graphics,
-            SkillDefinition skill,
-            int x,
-            int y,
-            int mouseX,
-            int mouseY
-    ) {
-
-        boolean hover =
-                isInside(
-                        mouseX,
-                        mouseY,
-                        x,
-                        y,
-                        SLOT_SIZE,
-                        SLOT_SIZE
-                );
-
-        boolean unlocked = isSkillUnlocked(skill);
-
-        if (!unlocked) {
-            drawLockedSlot(graphics, x, y);
-            graphics.drawCenteredString(
-                    this.font,
-                    "M:" + (int)skill.requiredMastery(),
-                    x + SLOT_SIZE / 2,
-                    y + 10,
-                    0xFFF04040
-            );
-        } else {
-            drawSlot(
-                    graphics,
-                    x,
-                    y,
-                    hover
-            );
-
-            ItemStack icon =
-                    skill.icon();
-
-            if (!icon.isEmpty()) {
-
-                graphics.renderItem(
-                        icon,
-                        x + 5,
-                        y + 2
-                );
+            if (isHover) {
+                hoveredSkill = skill;
+                tooltipMouseX = mouseX;
+                tooltipMouseY = mouseY;
             }
 
-            graphics.drawCenteredString(
-                    this.font,
-                    getShortName(
-                            skill.name()
-                    ),
-                    x + SLOT_SIZE / 2,
-                    y + 17,
-                    0xFFFFFFFF
-            );
+            drawSkillCard(graphics, cx, cy, cardW, cardH, skill, unlocked, isHover);
         }
     }
 
-    private void drawEmptyLibrarySlot(
-            GuiGraphics graphics,
-            int x,
-            int y
-    ) {
+    private void drawSkillCard(GuiGraphics graphics, int x, int y, int w, int h, SkillDefinition skill, boolean unlocked, boolean hover) {
+        int border = hover ? 0xFFFFFFFF : (unlocked ? 0xFFFFD700 : 0xFF3D2512);
+        int bg1 = unlocked ? (hover ? 0xFF7A4A22 : 0xFF543111) : 0xFF2A170B;
+        int bg2 = unlocked ? (hover ? 0xFF543111 : 0xFF3D220A) : 0xFF1C0E06;
 
-        drawSlot(
-                graphics,
-                x,
-                y,
-                false
-        );
+        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, border);
+        graphics.fillGradient(x, y, x + w, y + h, bg1, bg2);
 
-        graphics.drawCenteredString(
-                this.font,
-                "?",
-                x + SLOT_SIZE / 2,
-                y + 8,
-                0xFF555555
-        );
-    }
+        // Icon frame
+        int iconSize = 24;
+        int ix = x + 4;
+        int iy = y + (h - iconSize) / 2;
+        graphics.fill(ix - 1, iy - 1, ix + iconSize + 1, iy + iconSize + 1, unlocked ? 0xFFFFD700 : 0xFF555555);
+        graphics.fill(ix, iy, ix + iconSize, iy + iconSize, 0xFF141414);
 
-    private void drawCombatSlot(
-            GuiGraphics graphics,
-            int slot,
-            int x,
-            int y,
-            int mouseX,
-            int mouseY
-    ) {
+        // Item icon render
+        graphics.pose().pushPose();
+        graphics.pose().translate(ix + 4, iy + 4, 0);
+        graphics.renderItem(skill.icon(), 0, 0);
+        graphics.pose().popPose();
 
-        boolean hover =
-                isInside(
-                        mouseX,
-                        mouseY,
-                        x,
-                        y,
-                        SLOT_SIZE,
-                        SLOT_SIZE
-                );
+        // Texts
+        int textX = ix + iconSize + 5;
+        String name = skill.name();
+        if (this.font.width(name) > w - textX + x - 2) {
+            name = this.font.plainSubstrByWidth(name, w - textX + x - 8) + "...";
+        }
+        graphics.drawString(this.font, name, textX, y + 4, unlocked ? 0xFFFFFFFF : 0xFF888888, true);
 
-        drawSlot(
-                graphics,
-                x,
-                y,
-                hover
-        );
-
-        SkillDefinition skill =
-                SkillLoadout.getSkill(
-                        slot
-                );
-
-        if (skill != null) {
-
-            if (
-                    !skill.icon()
-                            .isEmpty()
-            ) {
-
-                graphics.renderItem(
-                        skill.icon(),
-                        x + 5,
-                        y + 2
-                );
-            }
-
-            graphics.drawCenteredString(
-                    this.font,
-                    getShortName(
-                            skill.name()
-                    ),
-                    x + SLOT_SIZE / 2,
-                    y + 17,
-                    0xFFFFFFFF
-            );
-
+        // Subtext / Mastery Status
+        if (unlocked) {
+            graphics.drawString(this.font, "§a✔ Açık §7| §b" + (int)skill.staminaCost() + " Stm", textX, y + 15, 0xFFCCCCCC, false);
+            graphics.drawString(this.font, "§6" + skill.getCooldownSeconds() + "s", textX, y + 23, 0xFFE0E0E0, false);
         } else {
-
-            graphics.drawCenteredString(
-                    this.font,
-                    "?",
-                    x + SLOT_SIZE / 2,
-                    y + 8,
-                    0xFF555555
-            );
+            graphics.drawString(this.font, "§c🔒 Kilitli", textX, y + 14, 0xFFFFAAAA, false);
+            graphics.drawString(this.font, "§eLv." + (int)skill.requiredMastery() + " Mastery", textX, y + 23, 0xFFFFE57F, false);
         }
-
-        graphics.drawString(
-                this.font,
-                SkillLoadout.getSkillKey(
-                        slot
-                ),
-                x + 2,
-                y + 2,
-                0xFFFFD54A
-        );
     }
 
-    private void drawSlot(
-            GuiGraphics graphics,
-            int x,
-            int y,
-            boolean hover
-    ) {
+    private void renderSkillTooltip(GuiGraphics graphics, SkillDefinition skill, int mx, int my) {
+        List<Component> tooltipLines = new ArrayList<>();
+        tooltipLines.add(Component.literal("§6§l" + skill.name()));
+        tooltipLines.add(Component.literal("§7" + skill.description()));
+        tooltipLines.add(Component.literal(""));
+        tooltipLines.add(Component.literal("§b⚡ Stamina: §f" + (int)skill.staminaCost() + " §8| §e⏳ Bekleme: §f" + skill.getCooldownSeconds() + "s"));
 
-        graphics.fill(
-                x + 1,
-                y + 1,
-                x + SLOT_SIZE + 1,
-                y + SLOT_SIZE + 1,
-                0x70000000
-        );
+        FightingStyle style = skill.style();
+        double currentMastery = switch (style) {
+            case FIST -> ClientPlayerData.getFightingMastery();
+            case SWORD -> ClientPlayerData.getSwordMastery();
+            case KICK -> ClientPlayerData.getKickMastery();
+            case SNIPER -> ClientPlayerData.getSniperMastery();
+        };
 
-        graphics.fill(
-                x,
-                y,
-                x + SLOT_SIZE,
-                y + SLOT_SIZE,
-                hover
-                        ? 0xFF353535
-                        : 0xFF202020
-        );
+        if (currentMastery >= skill.requiredMastery()) {
+            tooltipLines.add(Component.literal("§a✔ Gereken Ustalık: Lv. " + (int)skill.requiredMastery() + " (Açıldı)"));
+        } else {
+            tooltipLines.add(Component.literal("§c🔒 Gereken Ustalık: Lv. " + (int)skill.requiredMastery() + " (Mevcut: Lv. " + (int)currentMastery + ")"));
+        }
 
-        drawBorder(
-                graphics,
-                x,
-                y,
-                SLOT_SIZE,
-                SLOT_SIZE,
-                hover
-                        ? 0xFFFFD54A
-                        : 0xFF777777
-        );
+        graphics.renderComponentTooltip(this.font, tooltipLines, mx + 8, my + 8);
     }
 
-    private void renderStats(
-            GuiGraphics graphics,
-            int panelLeft,
-            int panelTop
-    ) {
+    private void drawStatCard(GuiGraphics graphics, int x, int y, int w, int h, ItemStack icon, String label, String value) {
+        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF2A170B);
+        graphics.fillGradient(x, y, x + w, y + h, 0xFF5E3917, 0xFF43260D);
+        graphics.fill(x, y, x + w, y + 1, 0xFF8A5A2B);
 
-        int x =
-                panelLeft
-                        + SIDE_WIDTH
-                        + 14;
+        graphics.pose().pushPose();
+        graphics.pose().translate(x + 3, y + 3, 0);
+        graphics.pose().scale(1.1F, 1.1F, 1.1F);
+        graphics.renderItem(icon, 0, 0);
+        graphics.pose().popPose();
 
-        int y =
-                panelTop
-                        + 18;
-
-        long level =
-                ClientPlayerData.getLevel();
-
-        long experience =
-                ClientPlayerData.getExperience();
-
-        double stamina =
-                ClientStamina.getStamina();
-
-        double maxStamina =
-                ClientStamina.getMaxStamina();
-
-        double staminaPercent =
-                ClientStamina.getPercentage();
-
-        graphics.drawString(
-                this.font,
-                "KARAKTER BİLGİLERİ",
-                x,
-                y,
-                0xFFFFD54A,
-                true
-        );
-
-        graphics.drawString(
-                this.font,
-                "Level: " + level + "  |  XP: " + experience,
-                x,
-                y + 16,
-                0xFFFFFFFF
-        );
-
-        graphics.drawString(
-                this.font,
-                "Race: " + ClientPlayerData.getRace().getDisplayName(),
-                x,
-                y + 28,
-                0xFFFFFFFF
-        );
-
-        graphics.drawString(
-                this.font,
-                "Combat Style: " + ClientPlayerData.getCombatStyle(),
-                x,
-                y + 40,
-                0xFFFFFFFF
-        );
-
-        // Stats section
-        graphics.drawString(
-                this.font,
-                "Stat Points: " + ClientPlayerData.getStatPoints(),
-                x,
-                y + 56,
-                ClientPlayerData.getStatPoints() > 0 ? 0xFFFFD54A : 0xFFAAAAAA,
-                true
-        );
-
-        // Strength
-        graphics.drawString(
-                this.font,
-                "Güç (Strength): " + ClientPlayerData.getStrength(),
-                x,
-                y + 70,
-                0xFFFFFFFF
-        );
-        if (ClientPlayerData.getStatPoints() > 0) {
-            graphics.fill(x + 130, y + 68, x + 142, y + 80, 0xFF444444);
-            graphics.drawString(this.font, "+", x + 134, y + 69, 0xFFFFD54A);
-        }
-
-        // Defense
-        graphics.drawString(
-                this.font,
-                "Savunma (Defense): " + ClientPlayerData.getDefense(),
-                x,
-                y + 84,
-                0xFFFFFFFF
-        );
-        if (ClientPlayerData.getStatPoints() > 0) {
-            graphics.fill(x + 130, y + 82, x + 142, y + 94, 0xFF444444);
-            graphics.drawString(this.font, "+", x + 134, y + 83, 0xFFFFD54A);
-        }
-
-        // Mastery section
-        graphics.drawString(
-                this.font,
-                "USTALIKLAR (MASTERY)",
-                x,
-                y + 104,
-                0xFFFFD54A,
-                true
-        );
-
-        graphics.drawString(
-                this.font,
-                String.format("Sword Mastery: %.1f", ClientPlayerData.getSwordMastery()),
-                x,
-                y + 118,
-                0xFFAAAAAA
-        );
-
-        graphics.drawString(
-                this.font,
-                String.format("Fighting Mastery: %.1f", ClientPlayerData.getFightingMastery()),
-                x,
-                y + 130,
-                0xFFAAAAAA
-        );
-
-        graphics.drawString(
-                this.font,
-                String.format("Sniper Mastery: %.1f", ClientPlayerData.getSniperMastery()),
-                x,
-                y + 142,
-                0xFFAAAAAA
-        );
-
-        graphics.drawString(
-                this.font,
-                String.format("Kick Mastery: %.1f", ClientPlayerData.getKickMastery()),
-                x,
-                y + 154,
-                0xFFAAAAAA
-        );
-
-        // Stamina section
-        graphics.drawString(
-                this.font,
-                "Stamina",
-                x,
-                y + 172,
-                0xFFFFD54A,
-                true
-        );
-
-        graphics.drawString(
-                this.font,
-                String.format(
-                        "%.0f / %.0f",
-                        stamina,
-                        maxStamina
-                ),
-                x + 58,
-                y + 172,
-                0xFFFFFFFF
-        );
-
-        int barX = x;
-        int barY = y + 184;
-        int barWidth = 200;
-        int barHeight = 7;
-
-        graphics.fill(
-                barX,
-                barY,
-                barX + barWidth,
-                barY + barHeight,
-                0xFF303030
-        );
-
-        int filled = (int) (barWidth * staminaPercent);
-        if (filled > 0) {
-            graphics.fill(
-                    barX,
-                    barY,
-                    barX + filled,
-                    barY + barHeight,
-                    0xFFFFD54A
-            );
-        }
-
-        graphics.drawString(
-                this.font,
-                "Combat Mode: " + (CombatState.isActive() ? "AKTİF" : "KAPALI"),
-                x,
-                y + 198,
-                CombatState.isActive() ? 0xFF6CFF8A : 0xFFAAAAAA
-        );
+        int textX = x + 24;
+        graphics.drawString(this.font, label, textX, y + 4, 0xFFE0E0E0, false);
+        graphics.drawString(this.font, value, textX, y + 13, 0xFFFFD700, true);
     }
 
-    private void drawDraggedSkill(
-            GuiGraphics graphics,
-            int mouseX,
-            int mouseY
-    ) {
+    private void drawWoodenPlanksPanel(GuiGraphics graphics, int x, int y, int w, int h) {
+        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF23140A);
+        graphics.fill(x, y, x + w, y + h, 0xFF43260D);
 
-        SkillDefinition skill =
-                SkillRegistry.getSkill(
-                        draggingSkill
-                );
-
-        if (
-                skill == null
-        ) {
-            return;
+        int plankHeight = 15;
+        for (int py = y; py < y + h; py += plankHeight) {
+            int curH = Math.min(plankHeight, y + h - py);
+            graphics.fillGradient(x, py, x + w, py + curH, 0xFF5E3917, 0xFF43260D);
+            graphics.fill(x, py, x + w, py + 1, 0xFF7A4A20);
+            graphics.fill(x, py + curH - 1, x + w, py + curH, 0xFF2A170B);
         }
+    }
 
-        int x =
-                mouseX
-                        - SLOT_SIZE / 2;
+    private void renderPlaceholderTab(GuiGraphics graphics, int x, int y, int w, String tabName) {
+        int bottomH = PANEL_HEIGHT - 38;
+        drawWoodenPlanksPanel(graphics, x, y, w, bottomH);
 
-        int y =
-                mouseY
-                        - SLOT_SIZE / 2;
+        String text = tabName + " İÇERİĞİ ÇOK YAKINDA...";
+        int tw = this.font.width(text);
+        graphics.drawString(this.font, text, x + (w - tw) / 2, y + bottomH / 2 - 4, 0xFFFFD700, true);
+    }
 
-        graphics.fill(
-                x,
-                y,
-                x + SLOT_SIZE,
-                y + SLOT_SIZE,
-                0xEE202020
-        );
+    private void drawLeftTabs(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        MenuTab[] tabs = MenuTab.values();
+        int tabW = 82;
+        int tabH = 32;
+        int gap = 3;
 
-        drawBorder(
-                graphics,
-                x,
-                y,
-                SLOT_SIZE,
-                SLOT_SIZE,
-                0xFFFFD54A
-        );
+        for (int i = 0; i < tabs.length; i++) {
+            MenuTab tab = tabs[i];
+            int ty = y + i * (tabH + gap);
+            boolean isSelected = tab == currentTab;
+            boolean isHover = mouseX >= x && mouseX <= x + tabW && mouseY >= ty && mouseY <= ty + tabH;
 
-        if (
-                !skill.icon().isEmpty()
-        ) {
+            int border = isSelected ? 0xFFFFD700 : (isHover ? 0xFF9E6530 : 0xFF2A170B);
+            int bg1 = isSelected ? 0xFF8C5326 : (isHover ? 0xFF6D421C : 0xFF46270E);
+            int bg2 = isSelected ? 0xFF6B3E1A : (isHover ? 0xFF523013 : 0xFF331B08);
 
-            graphics.renderItem(
-                    skill.icon(),
-                    x + 5,
-                    y + 2
-            );
+            graphics.fill(x - 1, ty - 1, x + tabW + 1, ty + tabH + 1, border);
+            graphics.fillGradient(x, ty, x + tabW, ty + tabH, bg1, bg2);
+            graphics.fill(x, ty, x + tabW, ty + 1, isSelected ? 0xFFFFE57F : 0xFF7A4A20);
+
+            drawTabIcon(graphics, x + 3, ty + 3, tab);
+
+            String[] lines = tab.getDisplayName().split("\n");
+            int textX = x + 30;
+            if (lines.length == 1) {
+                int textColor = isSelected ? 0xFFFFE57F : (isHover ? 0xFFFFFFFF : 0xFFE0E0E0);
+                graphics.drawString(this.font, lines[0], textX, ty + 12, textColor, true);
+            } else {
+                int textColor = isSelected ? 0xFFFFE57F : (isHover ? 0xFFFFFFFF : 0xFFE0E0E0);
+                graphics.drawString(this.font, lines[0], textX, ty + 7, textColor, true);
+                graphics.drawString(this.font, lines[1], textX, ty + 17, textColor, true);
+            }
         }
+    }
 
-        graphics.drawCenteredString(
-                this.font,
-                getShortName(
-                        skill.name()
-                ),
-                x + SLOT_SIZE / 2,
-                y + 17,
-                0xFFFFFFFF
-        );
+    private void drawTabIcon(GuiGraphics graphics, int x, int y, MenuTab tab) {
+        graphics.fill(x, y, x + 24, y + 24, 0xFF2A170B);
+        graphics.fill(x + 1, y + 1, x + 23, y + 23, 0xFF543111);
+
+        ItemStack icon = switch (tab) {
+            case GENEL -> new ItemStack(Items.GOLDEN_HELMET);
+            case DOVUS_STILI -> new ItemStack(Items.IRON_SWORD);
+            case HAKI -> new ItemStack(Items.COAL);
+            case IRK -> new ItemStack(Items.PRISMARINE_SHARD);
+            case MEYVE -> new ItemStack(Items.CHORUS_FRUIT);
+        };
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(x + 4, y + 4, 0);
+        graphics.pose().scale(1.0F, 1.0F, 1.0F);
+        graphics.renderItem(icon, 0, 0);
+        graphics.pose().popPose();
+    }
+
+    private void drawParchmentPanel(GuiGraphics graphics, int x, int y, int w, int h) {
+        graphics.fill(x - 5, y - 5, x + w + 5, y + h + 5, 0xFF3D4148);
+        graphics.fill(x - 3, y - 3, x + w + 3, y + h + 3, 0xFF606670);
+        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF2B2E33);
+
+        graphics.fill(x, y, x + w, y + h, 0xFFD8B983);
+        graphics.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, 0xFFE4CB9B, 0xFFC9A66B);
+
+        graphics.fill(x + 10, y + 10, x + w - 10, y + 11, 0x308B6B3D);
+        graphics.fill(x + 10, y + h - 11, x + w - 10, y + h - 10, 0x308B6B3D);
+
+        drawCornerBadge(graphics, x - 4, y - 4);
+        drawCornerBadge(graphics, x + w - 8, y - 4);
+        drawCornerBadge(graphics, x - 4, y + h - 8);
+        drawCornerBadge(graphics, x + w - 8, y + h - 8);
+    }
+
+    private void drawCornerBadge(GuiGraphics graphics, int x, int y) {
+        graphics.fill(x, y, x + 12, y + 12, 0xFF2A2D32);
+        graphics.fill(x + 1, y + 1, x + 11, y + 11, 0xFFEFEFEF);
+        graphics.fill(x + 3, y + 4, x + 5, y + 6, 0xFF111111);
+        graphics.fill(x + 7, y + 4, x + 9, y + 6, 0xFF111111);
+        graphics.fill(x + 4, y + 8, x + 8, y + 10, 0xFFB0B0B0);
+    }
+
+    private void drawHeader(GuiGraphics graphics, int panelX, int panelY, int panelWidth, String title) {
+        int bannerW = 210;
+        int bannerH = 22;
+        int bannerX = panelX + (panelWidth - bannerW) / 2;
+        int bannerY = panelY - 7;
+
+        graphics.fill(bannerX - 2, bannerY - 2, bannerX + bannerW + 2, bannerY + bannerH + 2, 0xFF1E1107);
+        graphics.fill(bannerX - 1, bannerY - 1, bannerX + bannerW + 1, bannerY + bannerH + 1, 0xFF7A481C);
+        graphics.fillGradient(bannerX, bannerY, bannerX + bannerW, bannerY + bannerH, 0xFF543111, 0xFF3D220A);
+
+        graphics.fill(bannerX + 3, bannerY + 3, bannerX + 5, bannerY + 5, 0xFFFFD700);
+        graphics.fill(bannerX + bannerW - 5, bannerY + 3, bannerX + bannerW - 3, bannerY + 5, 0xFFFFD700);
+        graphics.fill(bannerX + 3, bannerY + bannerH - 5, bannerX + 5, bannerY + bannerH - 3, 0xFFFFD700);
+        graphics.fill(bannerX + bannerW - 5, bannerY + bannerH - 5, bannerX + bannerW - 3, bannerY + bannerH - 3, 0xFFFFD700);
+
+        int textW = this.font.width(title);
+        graphics.drawString(this.font, title, bannerX + (bannerW - textW) / 2, bannerY + 7, 0xFFFFF1AA, true);
     }
 
     @Override
-    public boolean mouseClicked(
-            double mouseX,
-            double mouseY,
-            int button
-    ) {
-
-        int panelLeft =
-                (this.width - PANEL_WIDTH) / 2;
-
-        int panelTop =
-                (this.height - PANEL_HEIGHT) / 2;
-
-        if (
-                isInside(
-                        mouseX,
-                        mouseY,
-                        panelLeft + 6,
-                        panelTop + 42,
-                        SIDE_WIDTH - 12,
-                        26
-                )
-        ) {
-
-            currentTab =
-                    Tab.SKILLS;
-
-            return true;
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) {
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
-        if (
-                isInside(
-                        mouseX,
-                        mouseY,
-                        panelLeft + 6,
-                        panelTop + 76,
-                        SIDE_WIDTH - 12,
-                        26
-                )
-        ) {
+        int left = (this.width - PANEL_WIDTH) / 2;
+        int top = (this.height - PANEL_HEIGHT) / 2;
+        int tabX = left + 10;
+        int tabY = top + 26;
+        int tabW = 82;
+        int tabH = 32;
+        int gap = 3;
 
-            currentTab =
-                    Tab.STATS;
-
-            return true;
-        }
-
-        if (currentTab == Tab.STATS && button == 0) {
-            int x = panelLeft + SIDE_WIDTH + 14;
-            int y = panelTop + 18;
-            if (ClientPlayerData.getStatPoints() > 0) {
-                // Strength [+] at x + 130, y + 68
-                if (isInside(mouseX, mouseY, x + 130, y + 68, 12, 12)) {
-                    net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.mcreator.kaizokuocraft.network.AllocateStatPacket("STRENGTH"));
-                    return true;
+        MenuTab[] tabs = MenuTab.values();
+        for (int i = 0; i < tabs.length; i++) {
+            int ty = tabY + i * (tabH + gap);
+            if (mouseX >= tabX && mouseX <= tabX + tabW && mouseY >= ty && mouseY <= ty + tabH) {
+                if (currentTab != tabs[i]) {
+                    currentTab = tabs[i];
+                    playClickSound();
                 }
-                // Defense [+] at x + 130, y + 82
-                if (isInside(mouseX, mouseY, x + 130, y + 82, 12, 12)) {
-                    net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.mcreator.kaizokuocraft.network.AllocateStatPacket("DEFENSE"));
-                    return true;
-                }
+                return true;
             }
         }
 
-        if (
-                currentTab == Tab.SKILLS
-                        && button == 0
-        ) {
-
-            int left =
-                    panelLeft
-                            + SIDE_WIDTH
-                            + 14;
-
-            int libraryIndex = 0;
-            String activeStyle = ClientPlayerData.getCombatStyle();
-
-            for (
-                    SkillDefinition skill :
-                    SkillRegistry.getSkills()
-            ) {
-                if (skill.style() != null && !skill.style().name().equalsIgnoreCase(activeStyle)) {
-                    continue;
-                }
-
-                if (
-                        libraryIndex >= 9
-                ) {
-                    break;
-                }
-
-                int x =
-                        left
-                                + libraryIndex
-                                * (
-                                SLOT_SIZE
-                                        + SLOT_GAP
-                        );
-
-                int y =
-                        panelTop
-                                + SKILL_TOP_Y;
-
-                if (
-                        isInside(
-                                mouseX,
-                                mouseY,
-                                x,
-                                y,
-                                SLOT_SIZE,
-                                SLOT_SIZE
-                        )
-                ) {
-                    if (isSkillUnlocked(skill)) {
-                        draggingSkill = SkillRegistry.getSkills().indexOf(skill);
-                        return true;
-                    }
-                }
-
-                libraryIndex++;
-            }
-        }
-
-        if (
-                currentTab == Tab.SKILLS
-                        && button == 1
-        ) {
-
-            int left =
-                    panelLeft
-                            + SIDE_WIDTH
-                            + 14;
-
-            for (
-                    int slot = 0;
-                    slot < 9;
-                    slot++
-            ) {
-
-                int x =
-                        left
-                                + slot
-                                * (
-                                SLOT_SIZE
-                                        + SLOT_GAP
-                        );
-
-                int y =
-                        panelTop
-                                + COMBAT_Y;
-
-                if (
-                        isInside(
-                                mouseX,
-                                mouseY,
-                                x,
-                                y,
-                                SLOT_SIZE,
-                                SLOT_SIZE
-                        )
-                ) {
-
-                    SkillLoadout.clearSlot(
-                            slot
-                    );
-
-                    return true;
-                }
-            }
-        }
-
-        return super.mouseClicked(
-                mouseX,
-                mouseY,
-                button
-        );
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    @Override
-    public boolean mouseReleased(
-            double mouseX,
-            double mouseY,
-            int button
-    ) {
-
-        if (
-                button == 0
-                        && draggingSkill != -1
-        ) {
-
-            int panelLeft =
-                    (this.width
-                            - PANEL_WIDTH)
-                            / 2;
-
-            int panelTop =
-                    (this.height
-                            - PANEL_HEIGHT)
-                            / 2;
-
-            int left =
-                    panelLeft
-                            + SIDE_WIDTH
-                            + 14;
-
-            for (
-                    int slot = 0;
-                    slot < 9;
-                    slot++
-            ) {
-
-                int x =
-                        left
-                                + slot
-                                * (
-                                SLOT_SIZE
-                                        + SLOT_GAP
-                        );
-
-                int y =
-                        panelTop
-                                + COMBAT_Y;
-
-                if (
-                        isInside(
-                                mouseX,
-                                mouseY,
-                                x,
-                                y,
-                                SLOT_SIZE,
-                                SLOT_SIZE
-                        )
-                ) {
-
-                    SkillDefinition skill =
-                            SkillRegistry.getSkill(
-                                    draggingSkill
-                            );
-
-                    if (
-                            skill != null
-                    ) {
-
-                        SkillLoadout.setSkill(
-                                slot,
-                                skill.id()
-                        );
-                    }
-
-                    break;
-                }
-            }
-
-            draggingSkill =
-                    -1;
-
-            return true;
+    private void playClickSound() {
+        if (Minecraft.getInstance().player != null) {
+            Minecraft.getInstance().player.level().playSound(
+                    Minecraft.getInstance().player,
+                    Minecraft.getInstance().player.getX(),
+                    Minecraft.getInstance().player.getY(),
+                    Minecraft.getInstance().player.getZ(),
+                    SoundEvents.UI_BUTTON_CLICK.value(),
+                    SoundSource.PLAYERS,
+                    1.0F,
+                    1.0F
+            );
         }
-
-        return super.mouseReleased(
-                mouseX,
-                mouseY,
-                button
-        );
     }
-
-    private String getShortName(
-            String name
-    ) {
-
-        if (name == null) {
-            return "";
-        }
-
-        if (name.length() <= 5) {
-            return name;
-        }
-
-        return name.substring(
-                0,
-                5
-        );
-    }
-
-    private boolean isInside(
-            double mouseX,
-            double mouseY,
-            int x,
-            int y,
-            int width,
-            int height
-    ) {
-
-        return mouseX >= x
-                && mouseX < x + width
-                && mouseY >= y
-                && mouseY < y + height;
-    }
-
-    private void drawBorder(
-            GuiGraphics graphics,
-            int x,
-            int y,
-            int width,
-            int height,
-            int color
-    ) {
-
-        graphics.fill(
-                x,
-                y,
-                x + width,
-                y + 1,
-                color
-        );
-
-        graphics.fill(
-                x,
-                y + height - 1,
-                x + width,
-                y + height,
-                color
-        );
-
-        graphics.fill(
-                x,
-                y,
-                x + 1,
-                y + height,
-                color
-        );
-
-        graphics.fill(
-                x + width - 1,
-                y,
-                x + width,
-                y + height,
-                color
-        );
-    }
-
-    
 }

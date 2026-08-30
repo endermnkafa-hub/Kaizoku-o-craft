@@ -26,6 +26,7 @@ import net.mcreator.kaizokuocraft.network.SyncPlayerDataPacket;
 import net.mcreator.kaizokuocraft.network.StaminaSyncPacket;
 import net.mcreator.kaizokuocraft.network.SkillUsePacket;
 import net.mcreator.kaizokuocraft.network.AllocateStatPacket;
+import net.mcreator.kaizokuocraft.init.KaizokuOCraftModSounds;
 import net.mcreator.kaizokuocraft.client.KaizokuHud;
 import net.mcreator.kaizokuocraft.client.CombatVanillaHud;
 import net.mcreator.kaizokuocraft.client.CombatHud;
@@ -50,6 +51,7 @@ public class KaizokuOCraftMod {
 	public KaizokuOCraftMod(IEventBus modEventBus) {
 		// Start of user code block mod constructor
 		ModAttachments.register(modEventBus);
+		net.mcreator.kaizokuocraft.init.ModSounds.register(modEventBus);
 		NeoForge.EVENT_BUS.register(PlayerDataEvents.class);
 		NeoForge.EVENT_BUS.register(ExperienceEvents.class);
 		NeoForge.EVENT_BUS.register(DamageEvents.class);
@@ -57,6 +59,7 @@ public class KaizokuOCraftMod {
 		addNetworkMessage(SkillUsePacket.TYPE, SkillUsePacket.STREAM_CODEC, SkillUsePacket::handle);
 		addNetworkMessage(StaminaSyncPacket.TYPE, StaminaSyncPacket.STREAM_CODEC, StaminaSyncPacket::handle);
 		addNetworkMessage(AllocateStatPacket.TYPE, AllocateStatPacket.STREAM_CODEC, AllocateStatPacket::handle);
+		addNetworkMessage(net.mcreator.kaizokuocraft.network.CreateCharacterPacket.TYPE, net.mcreator.kaizokuocraft.network.CreateCharacterPacket.STREAM_CODEC, net.mcreator.kaizokuocraft.network.CreateCharacterPacket::handle);
 		addNetworkMessage(net.mcreator.kaizokuocraft.network.PlayPlayerAnimationMessage.TYPE, net.mcreator.kaizokuocraft.network.PlayPlayerAnimationMessage.STREAM_CODEC, net.mcreator.kaizokuocraft.network.PlayPlayerAnimationMessage::handleData);
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			modEventBus.register(ClientEventHandler.class);
@@ -69,6 +72,7 @@ public class KaizokuOCraftMod {
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
+		KaizokuOCraftModSounds.REGISTRY.register(modEventBus);
 		// Start of user code block mod init
 		// End of user code block mod init
 	}

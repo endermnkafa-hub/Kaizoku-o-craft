@@ -66,14 +66,19 @@ public final class ClientGameEventHandler {
             if (
                     minecraft.screen == null
             ) {
-
-                minecraft.setScreen(
-                        new KaizokuMenuScreen()
-                );
+                if (!ClientPlayerData.isCharacterCreated()) {
+                    minecraft.setScreen(
+                            new CharacterCreationScreen()
+                    );
+                } else {
+                    minecraft.setScreen(
+                            new KaizokuMenuScreen()
+                    );
+                }
 
             } else if (
-                    minecraft.screen
-                            instanceof KaizokuMenuScreen
+                    minecraft.screen instanceof KaizokuMenuScreen
+                            || minecraft.screen instanceof CharacterCreationScreen
             ) {
 
                 minecraft.setScreen(
@@ -83,12 +88,12 @@ public final class ClientGameEventHandler {
         }
 
         /*
-         * Menü açıksa combat tuşlarını
-         * kullanma.
+         * Menü açıksa veya karakter oluşturulmadıysa combat tuşlarını kullanma (Vanilla).
          */
         if (
                 minecraft.screen != null
                         || !CombatState.isActive()
+                        || !ClientPlayerData.isCharacterCreated()
         ) {
 
             resetKeyStates();

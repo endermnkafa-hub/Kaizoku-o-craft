@@ -1,9 +1,14 @@
 package net.mcreator.kaizokuocraft.client;
 
+import net.mcreator.kaizokuocraft.player.FactionType;
+import net.mcreator.kaizokuocraft.player.FightingStyle;
 import net.mcreator.kaizokuocraft.player.RaceType;
+import net.minecraft.nbt.CompoundTag;
 
 public final class ClientPlayerData {
 
+    private static boolean characterCreated = false;
+    private static FactionType faction = FactionType.PIRATE;
     private static long level = 1L;
     private static long experience = 0L;
     private static RaceType race = RaceType.HUMAN;
@@ -15,10 +20,18 @@ public final class ClientPlayerData {
     private static double fightingMastery = 0.0D;
     private static double sniperMastery = 0.0D;
     private static double kickMastery = 0.0D;
-    private static net.minecraft.nbt.CompoundTag hakiData = new net.minecraft.nbt.CompoundTag();
-    private static net.minecraft.nbt.CompoundTag fruitData = new net.minecraft.nbt.CompoundTag();
+    private static CompoundTag hakiData = new CompoundTag();
+    private static CompoundTag fruitData = new CompoundTag();
 
     private ClientPlayerData() {
+    }
+
+    public static boolean isCharacterCreated() {
+        return characterCreated;
+    }
+
+    public static FactionType getFaction() {
+        return faction != null ? faction : FactionType.PIRATE;
     }
 
     public static long getLevel() {
@@ -35,6 +48,14 @@ public final class ClientPlayerData {
 
     public static String getCombatStyle() {
         return combatStyle;
+    }
+
+    public static FightingStyle getFightingStyle() {
+        try {
+            return FightingStyle.valueOf(combatStyle);
+        } catch (Exception e) {
+            return FightingStyle.FIST;
+        }
     }
 
     public static int getStatPoints() {
@@ -65,15 +86,17 @@ public final class ClientPlayerData {
         return kickMastery;
     }
 
-    public static net.minecraft.nbt.CompoundTag getHakiData() {
+    public static CompoundTag getHakiData() {
         return hakiData;
     }
 
-    public static net.minecraft.nbt.CompoundTag getFruitData() {
+    public static CompoundTag getFruitData() {
         return fruitData;
     }
 
     public static void set(
+            boolean newCharacterCreated,
+            FactionType newFaction,
             long newLevel,
             long newExperience,
             RaceType newRace,
@@ -85,9 +108,11 @@ public final class ClientPlayerData {
             double newFightingMastery,
             double newSniperMastery,
             double newKickMastery,
-            net.minecraft.nbt.CompoundTag newHakiData,
-            net.minecraft.nbt.CompoundTag newFruitData
+            CompoundTag newHakiData,
+            CompoundTag newFruitData
     ) {
+        characterCreated = newCharacterCreated;
+        faction = newFaction == null ? FactionType.PIRATE : newFaction;
         level = Math.max(1L, newLevel);
         experience = Math.max(0L, newExperience);
         race = newRace == null ? RaceType.HUMAN : newRace;
@@ -111,11 +136,13 @@ public final class ClientPlayerData {
         fightingMastery = Math.max(0.0D, newFightingMastery);
         sniperMastery = Math.max(0.0D, newSniperMastery);
         kickMastery = Math.max(0.0D, newKickMastery);
-        hakiData = newHakiData == null ? new net.minecraft.nbt.CompoundTag() : newHakiData;
-        fruitData = newFruitData == null ? new net.minecraft.nbt.CompoundTag() : newFruitData;
+        hakiData = newHakiData == null ? new CompoundTag() : newHakiData;
+        fruitData = newFruitData == null ? new CompoundTag() : newFruitData;
     }
 
     public static void reset() {
+        characterCreated = false;
+        faction = FactionType.PIRATE;
         level = 1L;
         experience = 0L;
         race = RaceType.HUMAN;
@@ -127,7 +154,7 @@ public final class ClientPlayerData {
         fightingMastery = 0.0D;
         sniperMastery = 0.0D;
         kickMastery = 0.0D;
-        hakiData = new net.minecraft.nbt.CompoundTag();
-        fruitData = new net.minecraft.nbt.CompoundTag();
+        hakiData = new CompoundTag();
+        fruitData = new CompoundTag();
     }
 }

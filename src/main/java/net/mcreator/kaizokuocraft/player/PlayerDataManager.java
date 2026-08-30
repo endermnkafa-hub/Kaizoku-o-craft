@@ -176,6 +176,8 @@ public final class PlayerDataManager {
         PacketDistributor.sendToPlayer(
                 player,
                 new SyncPlayerDataPacket(
+                        data.isCharacterCreated(),
+                        data.getFaction(),
                         data.getLevel(),
                         data.getExperience(),
                         data.getRace(),

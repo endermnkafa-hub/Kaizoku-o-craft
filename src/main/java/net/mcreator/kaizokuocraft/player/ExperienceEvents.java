@@ -22,6 +22,11 @@ public final class ExperienceEvents {
             return;
         }
 
+        // Karakter oluşturulmadıysa XP verme (Vanilla mod)
+        if (!PlayerDataManager.get(player).isCharacterCreated()) {
+            return;
+        }
+
         // Şimdilik bütün moblar 10 XP veriyor.
         PlayerDataManager.addExperience(player, 10L);
     }

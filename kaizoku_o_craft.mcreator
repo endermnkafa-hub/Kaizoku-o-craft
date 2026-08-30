@@ -1,11 +1,49 @@
 {
   "mod_elements": [],
   "variable_elements": [],
-  "sound_elements": [],
+  "sound_elements": [
+    {
+      "name": "punch1",
+      "files": [
+        "punch1"
+      ],
+      "category": "neutral",
+      "subtitle": ""
+    },
+    {
+      "name": "punch2",
+      "files": [
+        "punch2"
+      ],
+      "category": "master",
+      "subtitle": ""
+    },
+    {
+      "name": "downslam",
+      "files": [
+        "downslam"
+      ],
+      "category": "neutral",
+      "subtitle": ""
+    },
+    {
+      "name": "uppercut",
+      "files": [
+        "uppercut"
+      ],
+      "category": "neutral",
+      "subtitle": ""
+    }
+  ],
   "tag_elements": {},
   "tab_element_order": {},
   "language_map": {
-    "en_us": {}
+    "en_us": {
+      "subtitles.punch1": "",
+      "subtitles.punch2": "",
+      "subtitles.downslam": "",
+      "subtitles.uppercut": ""
+    }
   },
   "metadata": {
     "files": [
@@ -15,7 +53,9 @@
       "src/main/resources/META-INF/neoforge.mods.toml",
       "src/main/java/net/mcreator/kaizokuocraft/network/PlayPlayerAnimationMessage.java",
       "src/main/java/net/mcreator/kaizokuocraft/KaizokuOCraftMod.java",
+      "src/main/resources/assets/kaizoku_o_craft/sounds.json",
       "src/main/resources/kaizoku_o_craft.mixins.json",
+      "src/main/java/net/mcreator/kaizokuocraft/init/KaizokuOCraftModSounds.java",
       "src/main/java/net/mcreator/kaizokuocraft/mixin/EntityRenderDispatcherMixin.java",
       "src/main/java/net/mcreator/kaizokuocraft/mixin/LivingEntityRendererMixin.java",
       "src/main/java/net/mcreator/kaizokuocraft/mixin/ItemInHandLayerMixin.java",
