@@ -1,5 +1,6 @@
 package net.mcreator.kaizokuocraft.client;
 
+import net.mcreator.kaizokuocraft.KaizokuOCraftMod;
 import net.mcreator.kaizokuocraft.player.FightingStyle;
 import net.mcreator.kaizokuocraft.player.PowerManager;
 import net.minecraft.client.Minecraft;
@@ -18,38 +19,65 @@ import java.util.List;
 public class KaizokuMenuScreen extends Screen {
 
     public enum MenuTab {
-        GENEL("GENEL"),
-        DOVUS_STILI("DÖVÜŞ\nSTİLİ"),
-        HAKI("HAKİ"),
-        IRK("IRK"),
-        MEYVE("ŞEYTAN\nMEYVESİ");
+        GENEL("GENEL", "textures/gui/icon_crown_gold.png"),
+        DOVUS_STILI("DÖVÜŞ\nSTİLİ", "textures/gui/icon_swords_color.png"),
+        HAKI("HAKİ", "textures/gui/icon_haki_fire.png"),
+        IRK("IRK", "textures/gui/icon_fishman.png"),
+        MEYVE("ŞEYTAN\nMEYVESİ", "textures/gui/icon_devil_fruit_purple.png");
 
         private final String displayName;
+        private final String iconPath;
 
-        MenuTab(String displayName) {
+        MenuTab(String displayName, String iconPath) {
             this.displayName = displayName;
+            this.iconPath = iconPath;
         }
 
         public String getDisplayName() {
             return displayName;
+        }
+
+        public ResourceLocation getIcon() {
+            return ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, iconPath);
         }
     }
 
     private static final int PANEL_WIDTH = 370;
     private static final int PANEL_HEIGHT = 205;
 
+    private static final ResourceLocation STATS_BG =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/stats_menu_bg.png");
+
+    private static final ResourceLocation BANNER_GENEL =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/banner_genel_istatistikler.png");
+    private static final ResourceLocation BANNER_DOVUS =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/banner_dovus_stili.png");
+
+    private static final ResourceLocation TAB_WOOD =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/tab_wood.png");
+    private static final ResourceLocation TAB_SELECTED =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/tab_selected_glow.png");
+
+    private static final ResourceLocation ICON_PUNCH_1 =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/skill_punch_1.png");
+    private static final ResourceLocation ICON_PUNCH_FIRE =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/skill_punch_fire.png");
+    private static final ResourceLocation ICON_PUNCH_BLACK =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/skill_punch_black.png");
+    private static final ResourceLocation ICON_BRAWLER =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/skill_brawler_power.png");
+    private static final ResourceLocation ICON_SWORD_SLASH =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/skill_sword_slash_gold.png");
+    private static final ResourceLocation ICON_KICK =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/skill_kick_slash.png");
+    private static final ResourceLocation ICON_LOCK =
+            ResourceLocation.fromNamespaceAndPath(KaizokuOCraftMod.MODID, "textures/gui/icon_lock_large.png");
+
     private MenuTab currentTab = MenuTab.GENEL;
 
-    // Tooltip hover target
     private SkillDefinition hoveredSkill = null;
     private int tooltipMouseX = 0;
     private int tooltipMouseY = 0;
-
-    private static final ResourceLocation STATS_BG =
-            ResourceLocation.fromNamespaceAndPath(
-                    net.mcreator.kaizokuocraft.KaizokuOCraftMod.MODID,
-                    "textures/gui/stats_menu_bg.png"
-            );
 
     public KaizokuMenuScreen() {
         super(Component.literal("Genel İstatistiklerim"));
@@ -78,13 +106,13 @@ public class KaizokuMenuScreen extends Screen {
         // 1. Draw High Definition One Piece GUI PNG Background
         graphics.blit(STATS_BG, left, top, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, 654, 533);
 
-        // 2. Draw Header Banner
-        drawHeader(graphics, left, top, PANEL_WIDTH, getHeaderTitle());
+        // 2. Draw Top Header Banner Sprite
+        drawHeaderBanner(graphics, left, top, PANEL_WIDTH);
 
-        // 3. Draw Left Navigation Tabs
+        // 3. Draw Left Navigation Tabs with real button sprites
         drawLeftTabs(graphics, left + 10, top + 26, mouseX, mouseY);
 
-        // 4. Draw Right Content Area based on current tab
+        // 4. Draw Right Content Area
         int contentX = left + 96;
         int contentY = top + 26;
         int contentW = PANEL_WIDTH - 108;
@@ -97,20 +125,30 @@ public class KaizokuMenuScreen extends Screen {
             renderPlaceholderTab(graphics, contentX, contentY, contentW, currentTab.name());
         }
 
-        // 5. Render Hover Tooltip on top of everything
+        // 5. Render Hover Tooltip
         if (hoveredSkill != null) {
             renderSkillTooltip(graphics, hoveredSkill, tooltipMouseX, tooltipMouseY);
         }
     }
 
-    private String getHeaderTitle() {
-        return switch (currentTab) {
-            case GENEL -> "GENEL İSTATİSTİKLERİM";
-            case DOVUS_STILI -> ClientPlayerData.getFightingStyle().getDisplayName() + " STİLİ";
-            case HAKI -> "HAKİ GÜÇLERİ";
-            case IRK -> "IRK BİLGİSİ";
-            case MEYVE -> "ŞEYTAN MEYVESİ";
-        };
+    private void drawHeaderBanner(GuiGraphics graphics, int panelX, int panelY, int panelWidth) {
+        int bannerW = 160;
+        int bannerH = 19;
+        int bannerX = panelX + (panelWidth - bannerW) / 2;
+        int bannerY = panelY - 5;
+
+        if (currentTab == MenuTab.GENEL) {
+            graphics.blit(BANNER_GENEL, bannerX, bannerY, 0, 0, bannerW, bannerH, 271, 31);
+        } else if (currentTab == MenuTab.DOVUS_STILI) {
+            graphics.blit(BANNER_DOVUS, bannerX, bannerY, 0, 0, bannerW, bannerH, 279, 38);
+        } else {
+            // Dynamic title banner
+            graphics.fill(bannerX - 1, bannerY - 1, bannerX + bannerW + 1, bannerY + bannerH + 1, 0xFF1E1107);
+            graphics.fillGradient(bannerX, bannerY, bannerX + bannerW, bannerY + bannerH, 0xFF543111, 0xFF3D220A);
+            String title = currentTab.name() + " BİLGİLERİ";
+            int textW = this.font.width(title);
+            graphics.drawString(this.font, title, bannerX + (bannerW - textW) / 2, bannerY + 5, 0xFFFFF1AA, true);
+        }
     }
 
     private void renderGenelTab(GuiGraphics graphics, int x, int y, int w, int mouseX, int mouseY) {
@@ -126,12 +164,7 @@ public class KaizokuMenuScreen extends Screen {
         double raceDef = ClientPlayerData.getRace().getDefenseMultiplier();
         double totalDef = raceDef * (1.0D + ClientPlayerData.getDefense() * 0.02D);
 
-        // 1. Current Level Header Box
-        int lvlH = 20;
-        graphics.fill(x - 1, y - 1, x + w + 1, y + lvlH + 1, 0xFF2A170B);
-        graphics.fillGradient(x, y, x + w, y + lvlH, 0xFF5E3917, 0xFF43260D);
-        graphics.fill(x, y, x + w, y + 1, 0xFF8A5A2B);
-
+        // 1. Current Level Header Text (centered over texture box)
         String lvlTitle = "MEVCUT GENEL SEVİYE: ";
         String lvlVal = String.valueOf(level);
         int totalLvlW = this.font.width(lvlTitle) + this.font.width(lvlVal);
@@ -139,39 +172,29 @@ public class KaizokuMenuScreen extends Screen {
         graphics.drawString(this.font, lvlTitle, lvlStartX, y + 6, 0xFFFFFFFF, true);
         graphics.drawString(this.font, lvlVal, lvlStartX + this.font.width(lvlTitle), y + 6, 0xFFFFD700, true);
 
-        // 2. XP Progress Bar Box
+        // 2. XP Progress Bar Fill & Text
         int barY = y + 24;
         int barH = 16;
-        graphics.fill(x - 1, barY - 1, x + w + 1, barY + barH + 1, 0xFF2A170B);
-        graphics.fill(x, barY, x + w, barY + barH, 0xFF1B1B1B);
-
-        int fillW = (int) ((w - 24) * progress);
+        int fillW = (int) ((w - 28) * progress);
         if (fillW > 0) {
-            graphics.fillGradient(x + 2, barY + 2, x + 2 + fillW, barY + barH - 2, 0xFFE5A91E, 0xFFF5D061);
+            graphics.fillGradient(x + 3, barY + 2, x + 3 + fillW, barY + barH - 2, 0xFFE5A91E, 0xFFF5D061);
         }
 
         String xpText = "XP İLERLEMESİ: " + experience + "/" + requiredXp + " XP";
         int xpTextW = this.font.width(xpText);
         graphics.drawString(this.font, xpText, x + (w - 24 - xpTextW) / 2 + 2, barY + 4, 0xFFFFFFFF, true);
 
-        int crownX = x + w - 20;
-        int crownY = barY + 2;
-        graphics.fill(crownX, crownY, crownX + 18, crownY + 12, 0xFF4A3510);
-        graphics.fill(crownX + 1, crownY + 1, crownX + 17, crownY + 11, 0xFFFFD700);
-        graphics.drawString(this.font, "XP", crownX + 4, crownY + 2, 0xFF1B1B1B, false);
-
-        // 3. Two Multiplier Cards (Damage and Defense)
+        // 3. Two Multiplier Cards (Damage and Defense values)
         int cardY = barY + 20;
-        int cardH = 24;
         int cardW = (w - 6) / 2;
 
-        drawStatCard(graphics, x, cardY, cardW, cardH, new ItemStack(Items.IRON_SWORD), "HASAR ÇARPANI:", String.format("x%.1f", totalDmg));
-        drawStatCard(graphics, x + cardW + 6, cardY, cardW, cardH, new ItemStack(Items.SHIELD), "DEFANS ÇARPANI:", String.format("x%.1f", totalDef));
+        // Damage multiplier text
+        graphics.drawString(this.font, "HASAR ÇARPANI:", x + 24, cardY + 4, 0xFFE0E0E0, false);
+        graphics.drawString(this.font, String.format("x%.1f", totalDmg), x + 24, cardY + 13, 0xFFFFD700, true);
 
-        // 4. Large Bottom Wooden Panel (Empty as requested for future additions)
-        int bottomY = cardY + 28;
-        int bottomH = y + PANEL_HEIGHT - 36 - bottomY;
-        drawWoodenPlanksPanel(graphics, x, bottomY, w, bottomH);
+        // Defense multiplier text
+        graphics.drawString(this.font, "DEFANS ÇARPANI:", x + cardW + 30, cardY + 4, 0xFFE0E0E0, false);
+        graphics.drawString(this.font, String.format("x%.1f", totalDef), x + cardW + 30, cardY + 13, 0xFFFFD700, true);
     }
 
     private void renderDovusStiliTab(GuiGraphics graphics, int x, int y, int w, int mouseX, int mouseY) {
@@ -229,11 +252,11 @@ public class KaizokuMenuScreen extends Screen {
                 tooltipMouseY = mouseY;
             }
 
-            drawSkillCard(graphics, cx, cy, cardW, cardH, skill, unlocked, isHover);
+            drawSkillCard(graphics, cx, cy, cardW, cardH, skill, unlocked, isHover, i);
         }
     }
 
-    private void drawSkillCard(GuiGraphics graphics, int x, int y, int w, int h, SkillDefinition skill, boolean unlocked, boolean hover) {
+    private void drawSkillCard(GuiGraphics graphics, int x, int y, int w, int h, SkillDefinition skill, boolean unlocked, boolean hover, int index) {
         int border = hover ? 0xFFFFFFFF : (unlocked ? 0xFFFFD700 : 0xFF3D2512);
         int bg1 = unlocked ? (hover ? 0xFF7A4A22 : 0xFF543111) : 0xFF2A170B;
         int bg2 = unlocked ? (hover ? 0xFF543111 : 0xFF3D220A) : 0xFF1C0E06;
@@ -241,18 +264,13 @@ public class KaizokuMenuScreen extends Screen {
         graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, border);
         graphics.fillGradient(x, y, x + w, y + h, bg1, bg2);
 
-        // Icon frame
-        int iconSize = 24;
+        // Icon sprite
+        int iconSize = 22;
         int ix = x + 4;
         int iy = y + (h - iconSize) / 2;
-        graphics.fill(ix - 1, iy - 1, ix + iconSize + 1, iy + iconSize + 1, unlocked ? 0xFFFFD700 : 0xFF555555);
-        graphics.fill(ix, iy, ix + iconSize, iy + iconSize, 0xFF141414);
 
-        // Item icon render
-        graphics.pose().pushPose();
-        graphics.pose().translate(ix + 4, iy + 4, 0);
-        graphics.renderItem(skill.icon(), 0, 0);
-        graphics.pose().popPose();
+        ResourceLocation skillIcon = getSkillTexture(skill.id(), unlocked);
+        graphics.blit(skillIcon, ix, iy, 0, 0, iconSize, iconSize, 41, 43);
 
         // Texts
         int textX = ix + iconSize + 5;
@@ -262,7 +280,6 @@ public class KaizokuMenuScreen extends Screen {
         }
         graphics.drawString(this.font, name, textX, y + 4, unlocked ? 0xFFFFFFFF : 0xFF888888, true);
 
-        // Subtext / Mastery Status
         if (unlocked) {
             graphics.drawString(this.font, "§a✔ Açık §7| §b" + (int)skill.staminaCost() + " Stm", textX, y + 15, 0xFFCCCCCC, false);
             graphics.drawString(this.font, "§6" + skill.getCooldownSeconds() + "s", textX, y + 23, 0xFFE0E0E0, false);
@@ -270,6 +287,24 @@ public class KaizokuMenuScreen extends Screen {
             graphics.drawString(this.font, "§c🔒 Kilitli", textX, y + 14, 0xFFFFAAAA, false);
             graphics.drawString(this.font, "§eLv." + (int)skill.requiredMastery() + " Mastery", textX, y + 23, 0xFFFFE57F, false);
         }
+    }
+
+    private ResourceLocation getSkillTexture(String skillId, boolean unlocked) {
+        if (!unlocked) {
+            return ICON_LOCK;
+        }
+        return switch (skillId) {
+            case "punch" -> ICON_PUNCH_1;
+            case "double_strike" -> ICON_PUNCH_FIRE;
+            case "front_kick" -> ICON_KICK;
+            case "uppercut" -> ICON_PUNCH_BLACK;
+            case "heavy_punch" -> ICON_BRAWLER;
+            case "shockwave" -> ICON_PUNCH_FIRE;
+            case "downslam" -> ICON_BRAWLER;
+            case "sword_slash", "oni_giri", "shishi_sonson" -> ICON_SWORD_SLASH;
+            case "collier_kick", "concasse", "diable_jambe" -> ICON_KICK;
+            default -> ICON_PUNCH_1;
+        };
     }
 
     private void renderSkillTooltip(GuiGraphics graphics, SkillDefinition skill, int mx, int my) {
@@ -294,22 +329,6 @@ public class KaizokuMenuScreen extends Screen {
         }
 
         graphics.renderComponentTooltip(this.font, tooltipLines, mx + 8, my + 8);
-    }
-
-    private void drawStatCard(GuiGraphics graphics, int x, int y, int w, int h, ItemStack icon, String label, String value) {
-        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF2A170B);
-        graphics.fillGradient(x, y, x + w, y + h, 0xFF5E3917, 0xFF43260D);
-        graphics.fill(x, y, x + w, y + 1, 0xFF8A5A2B);
-
-        graphics.pose().pushPose();
-        graphics.pose().translate(x + 3, y + 3, 0);
-        graphics.pose().scale(1.1F, 1.1F, 1.1F);
-        graphics.renderItem(icon, 0, 0);
-        graphics.pose().popPose();
-
-        int textX = x + 24;
-        graphics.drawString(this.font, label, textX, y + 4, 0xFFE0E0E0, false);
-        graphics.drawString(this.font, value, textX, y + 13, 0xFFFFD700, true);
     }
 
     private void drawWoodenPlanksPanel(GuiGraphics graphics, int x, int y, int w, int h) {
@@ -346,90 +365,27 @@ public class KaizokuMenuScreen extends Screen {
             boolean isSelected = tab == currentTab;
             boolean isHover = mouseX >= x && mouseX <= x + tabW && mouseY >= ty && mouseY <= ty + tabH;
 
-            int border = isSelected ? 0xFFFFD700 : (isHover ? 0xFF9E6530 : 0xFF2A170B);
-            int bg1 = isSelected ? 0xFF8C5326 : (isHover ? 0xFF6D421C : 0xFF46270E);
-            int bg2 = isSelected ? 0xFF6B3E1A : (isHover ? 0xFF523013 : 0xFF331B08);
+            // Draw button sprite
+            if (isSelected) {
+                graphics.blit(TAB_SELECTED, x, ty, 0, 0, tabW, tabH, 170, 55);
+            } else {
+                graphics.blit(TAB_WOOD, x, ty, 0, 0, tabW, tabH, 170, 35);
+            }
 
-            graphics.fill(x - 1, ty - 1, x + tabW + 1, ty + tabH + 1, border);
-            graphics.fillGradient(x, ty, x + tabW, ty + tabH, bg1, bg2);
-            graphics.fill(x, ty, x + tabW, ty + 1, isSelected ? 0xFFFFE57F : 0xFF7A4A20);
+            // Draw custom icon sprite
+            graphics.blit(tab.getIcon(), x + 4, ty + 5, 0, 0, 20, 20, 48, 48);
 
-            drawTabIcon(graphics, x + 3, ty + 3, tab);
-
+            // Tab Text
             String[] lines = tab.getDisplayName().split("\n");
-            int textX = x + 30;
+            int textX = x + 28;
+            int textColor = isSelected ? 0xFFFFE57F : (isHover ? 0xFFFFFFFF : 0xFFE0E0E0);
             if (lines.length == 1) {
-                int textColor = isSelected ? 0xFFFFE57F : (isHover ? 0xFFFFFFFF : 0xFFE0E0E0);
                 graphics.drawString(this.font, lines[0], textX, ty + 12, textColor, true);
             } else {
-                int textColor = isSelected ? 0xFFFFE57F : (isHover ? 0xFFFFFFFF : 0xFFE0E0E0);
                 graphics.drawString(this.font, lines[0], textX, ty + 7, textColor, true);
                 graphics.drawString(this.font, lines[1], textX, ty + 17, textColor, true);
             }
         }
-    }
-
-    private void drawTabIcon(GuiGraphics graphics, int x, int y, MenuTab tab) {
-        graphics.fill(x, y, x + 24, y + 24, 0xFF2A170B);
-        graphics.fill(x + 1, y + 1, x + 23, y + 23, 0xFF543111);
-
-        ItemStack icon = switch (tab) {
-            case GENEL -> new ItemStack(Items.GOLDEN_HELMET);
-            case DOVUS_STILI -> new ItemStack(Items.IRON_SWORD);
-            case HAKI -> new ItemStack(Items.COAL);
-            case IRK -> new ItemStack(Items.PRISMARINE_SHARD);
-            case MEYVE -> new ItemStack(Items.CHORUS_FRUIT);
-        };
-
-        graphics.pose().pushPose();
-        graphics.pose().translate(x + 4, y + 4, 0);
-        graphics.pose().scale(1.0F, 1.0F, 1.0F);
-        graphics.renderItem(icon, 0, 0);
-        graphics.pose().popPose();
-    }
-
-    private void drawParchmentPanel(GuiGraphics graphics, int x, int y, int w, int h) {
-        graphics.fill(x - 5, y - 5, x + w + 5, y + h + 5, 0xFF3D4148);
-        graphics.fill(x - 3, y - 3, x + w + 3, y + h + 3, 0xFF606670);
-        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF2B2E33);
-
-        graphics.fill(x, y, x + w, y + h, 0xFFD8B983);
-        graphics.fillGradient(x + 2, y + 2, x + w - 2, y + h - 2, 0xFFE4CB9B, 0xFFC9A66B);
-
-        graphics.fill(x + 10, y + 10, x + w - 10, y + 11, 0x308B6B3D);
-        graphics.fill(x + 10, y + h - 11, x + w - 10, y + h - 10, 0x308B6B3D);
-
-        drawCornerBadge(graphics, x - 4, y - 4);
-        drawCornerBadge(graphics, x + w - 8, y - 4);
-        drawCornerBadge(graphics, x - 4, y + h - 8);
-        drawCornerBadge(graphics, x + w - 8, y + h - 8);
-    }
-
-    private void drawCornerBadge(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 12, y + 12, 0xFF2A2D32);
-        graphics.fill(x + 1, y + 1, x + 11, y + 11, 0xFFEFEFEF);
-        graphics.fill(x + 3, y + 4, x + 5, y + 6, 0xFF111111);
-        graphics.fill(x + 7, y + 4, x + 9, y + 6, 0xFF111111);
-        graphics.fill(x + 4, y + 8, x + 8, y + 10, 0xFFB0B0B0);
-    }
-
-    private void drawHeader(GuiGraphics graphics, int panelX, int panelY, int panelWidth, String title) {
-        int bannerW = 210;
-        int bannerH = 22;
-        int bannerX = panelX + (panelWidth - bannerW) / 2;
-        int bannerY = panelY - 7;
-
-        graphics.fill(bannerX - 2, bannerY - 2, bannerX + bannerW + 2, bannerY + bannerH + 2, 0xFF1E1107);
-        graphics.fill(bannerX - 1, bannerY - 1, bannerX + bannerW + 1, bannerY + bannerH + 1, 0xFF7A481C);
-        graphics.fillGradient(bannerX, bannerY, bannerX + bannerW, bannerY + bannerH, 0xFF543111, 0xFF3D220A);
-
-        graphics.fill(bannerX + 3, bannerY + 3, bannerX + 5, bannerY + 5, 0xFFFFD700);
-        graphics.fill(bannerX + bannerW - 5, bannerY + 3, bannerX + bannerW - 3, bannerY + 5, 0xFFFFD700);
-        graphics.fill(bannerX + 3, bannerY + bannerH - 5, bannerX + 5, bannerY + bannerH - 3, 0xFFFFD700);
-        graphics.fill(bannerX + bannerW - 5, bannerY + bannerH - 5, bannerX + bannerW - 3, bannerY + bannerH - 3, 0xFFFFD700);
-
-        int textW = this.font.width(title);
-        graphics.drawString(this.font, title, bannerX + (bannerW - textW) / 2, bannerY + 7, 0xFFFFF1AA, true);
     }
 
     @Override
